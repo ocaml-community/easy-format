@@ -1,13 +1,5 @@
 (* $Id$ *)
 
-(*
-  Formatting rules:
-  - always some whitespace after a label
-  - always some whitespace after the separator,
-    before the next element of a list
-*)
-
-
 open Format
 
 type list_param = {
