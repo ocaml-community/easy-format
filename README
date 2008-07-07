@@ -1,0 +1,43 @@
++------------------------------------+
+| Easy_format: indentation made easy |
++------------------------------------+
+
+
+Introduction
+============
+
+This module offers classic C-style indentation.
+It provides a simplified interface to 
+the Format module of the standard library.
+
+Input data must be first modelled as a tree using 3 kinds of nodes:
+- atoms
+- lists
+- labelled nodes
+
+Atoms represent any text that is guaranteed to be printed as-is.
+Lists can model any sequence of items such as arrays of data
+or lists of definitions that are labelled with something 
+like "int main", "let x =" or "x:".
+
+
+
+Indentation rules
+=================
+
+Indentation is performed using ASCII space character, 
+and whitespace as produced by the Format module.
+The current implementation uses reasonable characters: ASCII space ' '
+and ASCII line feeds '\n' although the output functions may perform 
+a conversion, i.e. convert "\n" into "\r\n" on Windows out_channels opened
+in text mode.
+
+No strict indentation rules are guaranteed. The target language, if any,
+is assumed to treat any sequence of whitespace characters 
+between nodes as insignificant.
+
+
+Examples
+========
+
+Complete, executable examples are provided with the distribution.
