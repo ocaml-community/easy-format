@@ -4,6 +4,10 @@ type lambda =
   | Apply of lambda * lambda
 
 
+(* We make the page more narrow for illustration purposes *)
+let _ = Format.set_margin 20
+
+
 
 (* \n f x. n (\g h. h (g f)) (\u. x) (\u. u) *)
 (* \n. \f. \x. n (\g. \h. h (g f)) (\u. x) (\u. u) *)
@@ -86,28 +90,25 @@ let _ =
 open Printf
 open Easy_format
 
-let app_param = 
-  ("", "", "",
-   { space_after_open = false;
-     space_after_separator = true;
-     space_before_close = false })
+let p1 = { spaced_label with indent_after_label = 1 }
+let p2 = { spaced_label with indent_after_label = 2 }
 
 let rec exp0_node = function
     Var s -> Atom s
   | lam -> List (("(", "", ")", compact_list), [lambda_node lam])
 
 and app_node = function
-    Apply (f, arg) -> List (app_param, [app_node f; exp0_node arg])
+    Apply (f, arg) -> Label ((app_node f, p2), exp0_node arg)
   | f -> exp0_node f
       
 and lambda_node = function
     Lambda (s, lam) ->
-      Label ((sprintf "\\%s." s, spaced_label), lambda_node lam)
+      Label ((Atom (sprintf "\\%s." s), p1), lambda_node lam)
   | e -> app_node e
 
 
 let _ =
-  print_endline "Same, using Easy_format";
+  print_endline "Same, using Easy_format:";
   Pretty.to_stdout (lambda_node sample_data);
   print_newline ()
 

@@ -11,15 +11,15 @@ let make_data list_param label_param =
       obj_param,
       [
 	Label (
-	  ("x:", label_param), 
+	  (Atom "x:", label_param), 
 	  Atom "y"
 	);
 	Label (
-	  ("y:", label_param), 
-	  List (obj_param, [Label (("z:", label_param), Atom "aaa")])
+	  (Atom "y:", label_param), 
+	  List (obj_param, [Label ((Atom "z:", label_param), Atom "aaa")])
 	);
 	Label (
-	("a:", label_param), 
+	(Atom "a:", label_param), 
 	  List (
 	    array_param,
 	    [ 
@@ -30,7 +30,8 @@ let make_data list_param label_param =
 	  )
 	);
 	Label (
-	  ("\"a long label ...............................................\":",
+	  (Atom "\"a long label ..................\
+                   .............................\":",
 	   label_param),
 	  List (
 	    array_param,
@@ -63,7 +64,7 @@ let _ =
   let x2 = make_data spaced_list spaced_label in
   Easy_format.Pretty.to_stdout x1;
   print_newline ();
-  Easy_format.Pretty.to_stdout ~indent:1 x2;
+  Easy_format.Pretty.to_stdout x2;
   print_newline ();
   Easy_format.Compact.to_stdout x1;
   print_newline ()
