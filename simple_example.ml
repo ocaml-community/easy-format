@@ -30,8 +30,11 @@ let print_tuple l =
 
 
 let _ =
+  (* Triangular array of arrays showing wrapping of lists of atoms *)
   print_matrix (Array.init 30 (fun i -> Array.init i float));
   print_newline ();
+
+  (* A simple tuple *)
   print_tuple [ 1.; 2.; 3.; 4. ];
   print_newline ()
 

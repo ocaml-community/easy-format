@@ -41,6 +41,13 @@ type t =
 
 module Pretty =
 struct
+  let extra_box l = 
+    if List.for_all (function Atom _ -> true | _ -> false) l then
+      ((fun fmt -> pp_open_hovbox fmt 0),
+       (fun fmt -> pp_close_box fmt ()))
+    else
+      ((fun fmt -> ()),
+       (fun fmt -> ()))
 
   let rec fprint_t fmt indent = function
       Atom s -> fprintf fmt "%s" s
@@ -54,13 +61,17 @@ struct
 	  fprintf fmt "%s %s" op cl
 	else
 	  fprintf fmt "%s%s" op cl
-    | x :: tl ->
+    | x :: tl as l ->
 	pp_open_hvbox fmt indent;
 	pp_print_string fmt op;
 	if p.space_after_open then
 	  pp_print_space fmt ()
 	else
 	  pp_print_cut fmt ();
+
+	let open_extra, close_extra = extra_box l in
+	open_extra fmt;
+
 	fprint_t fmt indent x;
 	List.iter (
 	  fun x ->
@@ -71,6 +82,10 @@ struct
 	      pp_print_cut fmt ();
 	    fprint_t fmt indent x
 	) tl;
+
+	close_extra fmt;
+
+
 	if p.space_before_close then
 	  pp_print_break fmt 1 (-indent)
 	else
@@ -111,6 +126,9 @@ struct
 		 else
 		   pp_print_cut fmt ();
 
+		 let open_extra, close_extra = extra_box l in
+		 open_extra fmt;
+
 		 fprint_t fmt indent x;
 		 List.iter (
 		   fun x -> 
@@ -121,6 +139,10 @@ struct
 		       pp_print_cut fmt ();
 		     fprint_t fmt indent x
 		 ) tl;
+
+		 close_extra fmt;
+
+
 		 if p.space_before_close then
 		   pp_print_break fmt 1 (-indent)
 		 else
