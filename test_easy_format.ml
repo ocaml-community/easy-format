@@ -63,7 +63,7 @@ let _ =
   let x2 = make_data spaced_list spaced_label in
   Easy_format.Pretty.to_stdout x1;
   print_newline ();
-  Easy_format.Pretty.to_stdout x2;
+  Easy_format.Pretty.to_stdout ~indent:1 x2;
   print_newline ();
   Easy_format.Compact.to_stdout x1;
   print_newline ()

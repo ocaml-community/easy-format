@@ -17,6 +17,8 @@ test:
 	./test_easy_format
 	ocamlc -o lambda_example easy_format.cmo lambda_example.ml
 	./lambda_example
+	ocamlc -o simple_example easy_format.cmo simple_example.ml
+	./simple_example
 clean:
 	rm -f *.cm[iox] *.o *.annot test_easy_format lambda_example \
 		bytecode nativecode

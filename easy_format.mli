@@ -63,21 +63,21 @@ type t =
 (* Indentation *)
 module Pretty :
 sig
-  val to_formatter : Format.formatter -> t -> unit
-  val to_buffer : Buffer.t -> t -> unit
-  val to_string : t -> string
-  val to_channel : out_channel -> t -> unit
-  val to_stdout : t -> unit
-  val to_stderr : t -> unit
+  val to_formatter : ?indent:int -> Format.formatter -> t -> unit
+  val to_buffer : ?indent:int -> Buffer.t -> t -> unit
+  val to_string : ?indent:int -> t -> string
+  val to_channel : ?indent:int -> out_channel -> t -> unit
+  val to_stdout : ?indent:int -> t -> unit
+  val to_stderr : ?indent:int -> t -> unit
 end
 
 (* No indentation at all, no newlines other than those in the input data. *)
 module Compact :
 sig
-  val to_formatter : Format.formatter -> t -> unit
   val to_buffer : Buffer.t -> t -> unit
   val to_string : t -> string
   val to_channel : out_channel -> t -> unit
   val to_stdout : t -> unit
   val to_stderr : t -> unit
-end
+  val to_formatter : Format.formatter -> t -> unit
+ end

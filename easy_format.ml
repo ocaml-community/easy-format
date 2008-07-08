@@ -42,30 +42,41 @@ type t =
 module Pretty =
 struct
 
-  let rec fprint_t fmt = function
+  let rec fprint_t fmt indent = function
       Atom s -> fprintf fmt "%s" s
-    | List (param, l) -> fprint_list fmt param l
-    | Label (label, x) -> fprint_pair fmt label x
+    | List (param, l) -> fprint_list fmt indent param l
+    | Label (label, x) -> fprint_pair fmt indent label x
       
   (* Printing a list which is not after a label *)
-  and fprint_list fmt (op, sep, cl, p) = function
-      [] -> fprintf fmt "%s%s" op cl
+  and fprint_list fmt indent (op, sep, cl, p) = function
+      [] -> 
+	if p.space_after_open || p.space_before_close then
+	  fprintf fmt "%s %s" op cl
+	else
+	  fprintf fmt "%s%s" op cl
     | x :: tl ->
+	pp_open_hvbox fmt indent;
+	pp_print_string fmt op;
 	if p.space_after_open then
-	  fprintf fmt "@[<hv 2>%s@ " op
+	  pp_print_space fmt ()
 	else
-	  fprintf fmt "@[<hv 2>%s@," op;
-	fprint_t fmt x;
-	List.iter (fun x ->
-		     if p.space_after_separator then
-		       fprintf fmt "%s@ %a" sep fprint_t x
-		     else
-		       fprintf fmt "%s@,%a" sep fprint_t x)
-	  tl;
+	  pp_print_cut fmt ();
+	fprint_t fmt indent x;
+	List.iter (
+	  fun x ->
+	    pp_print_string fmt sep;
+	    if p.space_after_separator then
+	      pp_print_space fmt ()
+	    else
+	      pp_print_cut fmt ();
+	    fprint_t fmt indent x
+	) tl;
 	if p.space_before_close then
-	  fprintf fmt "@;<1 -2>%s@]" cl
+	  pp_print_break fmt 1 (-indent)
 	else
-	  fprintf fmt "@;<0 -2>%s@]" cl
+	  pp_print_break fmt 0 (-indent);
+	pp_print_string fmt cl;
+	pp_close_box fmt ()
 	  
 	  
   (* Printing a label:value pair.
@@ -74,63 +85,78 @@ struct
      and the closing bracket is either on the same line
      or vertically aligned with the beginning of the key. 
   *)
-  and fprint_pair fmt (label, lp) x =
+  and fprint_pair fmt indent (label, lp) x =
     match x with
 	List ((op, sep, cl, p), l) -> 
 	  (match l with
 	       [] -> 
 		 if lp.space_after_label then
-		   fprintf fmt "%s %s%s" label op cl
+		   fprintf fmt "%s " label
 		 else
-		   fprintf fmt "%s%s%s" label op cl
-	     | x :: tl -> 
-		 if lp.space_after_label then
-		   fprintf fmt "@[<hv 2>%s " label
+		   fprintf fmt "%s" label;
+		 if p.space_after_open || p.space_before_close then
+		   fprintf fmt "%s %s" op cl
 		 else
-		   fprintf fmt "@[<hv 2>%s" label;
-		 if p.space_after_open then
-		   fprintf fmt "%s@ " op
-		 else
-		   fprintf fmt "%s@," op;
+		   fprintf fmt "%s%s" op cl
 
-		 fprint_t fmt x;
+	     | x :: tl -> 
+		 pp_open_hvbox fmt indent;
+		 if lp.space_after_label then
+		   fprintf fmt "%s " label
+		 else
+		   fprintf fmt "%s" label;
+		 pp_print_string fmt op;
+		 if p.space_after_open then
+		   pp_print_space fmt ()
+		 else
+		   pp_print_cut fmt ();
+
+		 fprint_t fmt indent x;
 		 List.iter (
 		   fun x -> 
+		     pp_print_string fmt sep;
 		     if p.space_after_separator then
-		       fprintf fmt "%s@ %a" sep fprint_t x
+		       pp_print_space fmt ()
 		     else
-		       fprintf fmt "%s@,%a" sep fprint_t x
+		       pp_print_cut fmt ();
+		     fprint_t fmt indent x
 		 ) tl;
 		 if p.space_before_close then
-		   fprintf fmt "@;<1 -2>%s@]" cl
+		   pp_print_break fmt 1 (-indent)
 		 else
-		   fprintf fmt "@;<0 -2>%s@]" cl)
+		   pp_print_break fmt 0 (-indent);
+		 pp_print_string fmt cl;
+		 pp_close_box fmt ()
+	  )
       | _ -> 
-	  (* An atom, perhaps a long string that would go to the next line *)
+	  pp_open_hvbox fmt indent;
+	  pp_print_string fmt label;
 	  if lp.space_after_label then
-	    fprintf fmt "@[%s@;<1 2>%a@]" label fprint_t x
+	    pp_print_break fmt 1 indent
 	  else
-	    fprintf fmt "@[%s@;<0 2>%a@]" label fprint_t x
+	    pp_print_break fmt 0 indent;
+	  fprint_t fmt indent x;
+	  pp_close_box fmt ()
 
-  let to_formatter fmt x =
-    fprint_t fmt x;
+  let to_formatter ?(indent = 2) fmt x =
+    fprint_t fmt indent x;
     pp_print_flush fmt ()
       
-  let to_buffer buf x =
+  let to_buffer ?indent buf x =
     let fmt = Format.formatter_of_buffer buf in
-    to_formatter fmt x
+    to_formatter ?indent fmt x
       
-  let to_string x =
+  let to_string ?indent x =
     let buf = Buffer.create 500 in
-    to_buffer buf x;
+    to_buffer ?indent buf x;
     Buffer.contents buf
       
-  let to_channel oc x =
+  let to_channel ?indent oc x =
     let fmt = formatter_of_out_channel oc in
-    to_formatter fmt x
+    to_formatter ?indent fmt x
       
-  let to_stdout x = to_formatter std_formatter x
-  let to_stderr x = to_formatter err_formatter x
+  let to_stdout ?indent x = to_formatter ?indent std_formatter x
+  let to_stderr ?indent x = to_formatter ?indent err_formatter x
 
 end
 
