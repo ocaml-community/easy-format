@@ -6,6 +6,7 @@ type list_param = {
   space_after_opening : bool;
   space_after_separator : bool;
   space_before_closing : bool;
+  stick_to_label : bool;
   align_closing : bool;
   indent_items : int
 }
@@ -15,31 +16,36 @@ type label_param = {
   indent_after_label : int
 }
 
-let spaced_list = {
-  space_after_opening = true;
-  space_after_separator = true;
-  space_before_closing = true;
-  align_closing = true;
-  indent_items = 2
-}
+module Param =
+struct
+  let spaced_list = {
+    space_after_opening = true;
+    space_after_separator = true;
+    space_before_closing = true;
+    stick_to_label = true;
+    align_closing = true;
+    indent_items = 2
+  }
 
-let compact_list = {
-  space_after_opening = false;
-  space_after_separator = false;
-  space_before_closing = false;
-  align_closing = false;
-  indent_items = 2
-}
-
-let spaced_label = {
-  space_after_label = true;
-  indent_after_label = 2;
-}
-
-let compact_label = {
-  space_after_label = false;
-  indent_after_label = 2;
-}
+  let compact_list = {
+    space_after_opening = false;
+    space_after_separator = false;
+    space_before_closing = false;
+    stick_to_label = false;
+    align_closing = false;
+    indent_items = 2
+  }
+    
+  let spaced_label = {
+    space_after_label = true;
+    indent_after_label = 2;
+  }
+    
+  let compact_label = {
+    space_after_label = false;
+    indent_after_label = 2;
+  }
+end
 
 
 type t =
@@ -115,16 +121,10 @@ struct
 	else
 	  fprintf fmt "%s%s" op cl
     | x :: tl ->
-(*
-	pp_open_hvbox fmt indent;
-*)
 	pp_print_string fmt op;
 	if p.space_after_opening then
 	  pp_print_string fmt " ";
-(*
-	let open_extra, close_extra = extra_box l in
-	open_extra fmt;
-*)
+
 	pp_open_hovbox fmt 0;
 
 	fprint_t fmt x;
@@ -138,16 +138,11 @@ struct
 	    fprint_t fmt x
 	) tl;
 
-(*
-	close_extra fmt;
-*)
 	pp_close_box fmt ();
 
 	if p.space_before_closing then
 	  pp_print_string fmt " ";
-	pp_print_string fmt cl(*;
-	  
-	pp_close_box fmt ()*)
+	pp_print_string fmt cl
 	  
   (* Printing a label:value pair.
      
@@ -157,7 +152,7 @@ struct
   *)
   and fprint_pair fmt (label, lp) x =
     match x with
-	List ((op, sep, cl, p), l) when p.align_closing -> 
+	List ((op, sep, cl, p), l) when p.stick_to_label && p.align_closing -> 
 	  (match l with
 	       [] -> 
 		 fprint_t fmt label;

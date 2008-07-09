@@ -25,8 +25,9 @@ type list_param = {
   space_after_opening : bool;
   space_after_separator : bool;
   space_before_closing : bool;
+  stick_to_label : bool;
   align_closing : bool;
-  indent_items : int; (** Extra indentation before list items when 
+  indent_items : int; (** Extra indentation before the list body items when 
 			  align_closing is true. *)
 }
 
@@ -36,13 +37,16 @@ type label_param = {
 				that comes after a label. *)
 }
 
-(** Predefined style with more space (all fields are true) *)
-val spaced_list : list_param
-val spaced_label : label_param
+module Param :
+sig
+  (** Predefined style with more space (all fields are true) *)
+  val spaced_list : list_param
+  val spaced_label : label_param
 
-(** Predefined style with less space (all fields are false) *)
-val compact_list : list_param
-val compact_label : label_param
+  (** Predefined style with less space (all fields are false) *)
+  val compact_list : list_param
+  val compact_label : label_param
+end
 
 
 type t =

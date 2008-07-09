@@ -41,3 +41,172 @@ Examples
 ========
 
 Complete, executable examples are provided with the distribution.
+
+
+
+Frequent patterns
+=================
+
+
+
+1. Sticky opening
+   --------------
+
+label opening ... closing
+
+or
+
+label opening
+  ...
+closing
+
+
+Parameters:
+  stick_to_label = true
+  align_closing = true
+
+
+2. Non-sticky opening
+   ------------------
+
+label opening item1 item2 closing
+
+or
+
+label
+  opening
+    ...
+  closing
+
+
+Parameters:
+  stick_to_label = false
+  align_closing = true
+
+
+3. Sequence
+   --------
+
+label opening ... closing
+
+or
+
+label
+opening
+  ...
+closing
+
+
+Parameters:
+  indent_after_label = 0
+  stick_to_label = false
+  align_closing = true
+
+
+
+4. Indented list
+   -------------
+
+opening item1 item2 closing
+
+or
+
+opening
+  item1
+  item2
+closing
+
+
+Parameters:
+  indent_items = 2
+  align_closing = true
+
+
+
+5. Wrapped list
+   ------------
+
+opening item1 item2 item3 closing
+
+or
+
+opening item1 item2
+        item3 closing
+
+
+Parameters:
+  align_closing = false
+
+
+
+6. Padding
+   -------
+
+( item1 item2 )
+
+or
+
+(
+  item1
+  item2
+)
+
+
+Parameters:
+  space_after_opening = true
+  space_before_closing = true
+
+
+
+7. No padding
+   ----------
+
+(item1 item2)
+
+or
+
+(
+  item1
+  item2
+)
+
+
+Parameters:
+  space_after_opening = false
+  space_before_closing = false
+
+
+
+8. Space after separator
+   ---------------------
+
+opening item1, item2 closing
+
+or
+
+opening
+  item1,
+  item2
+closing
+
+
+Parameters:
+  space_after_separator = true
+
+
+
+9. No space after separator
+   ------------------------
+
+opening item1,item2 closing
+
+or
+
+opening
+  item1,
+  item2
+closing
+
+
+Parameters:
+  space_after_separator = false

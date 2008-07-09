@@ -89,6 +89,7 @@ let _ =
 
 open Printf
 open Easy_format
+open Easy_format.Param
 
 let p1 = { spaced_label with indent_after_label = 1 }
 let p2 = { spaced_label with indent_after_label = 2 }

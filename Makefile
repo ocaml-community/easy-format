@@ -1,6 +1,7 @@
 VERSION = 0.9.0
+export VERSION
 
-.PHONY: default all opt test doc clean
+.PHONY: default all opt test doc soft-clean clean
 default: all opt
 all:
 	ocamlc -c easy_format.mli
@@ -21,20 +22,26 @@ simple_example: all simple_example.ml
 simple_example.out: simple_example
 	./simple_example > simple_example.out
 
-doc: ocamldoc/index.html simple_example.html
+doc: ocamldoc/index.html easy_format_example.html
 ocamldoc/index.html: easy_format.mli
 	ocamldoc -d ocamldoc -html $<
-simple_example.html: simple_example.out simple_example.ml
+easy_format_example.html: simple_example.out simple_example.ml
 	cat simple_example.ml > easy_format_example.ml
 	echo '(* Output: ' >> easy_format_example.ml
 	cat simple_example.out >> easy_format_example.ml
 	echo '*)' >> easy_format_example.ml
-	caml2html easy_format_example.ml -t -o $@
-clean:
+	caml2html easy_format_example.ml -t -o easy_format_example.html
+
+
+soft-clean:
 	rm -f *.cm[iox] *.o *.annot \
 		test_easy_format lambda_example simple_example \
-		bytecode nativecode *.out ocamldoc/* \
-		example.* easy_format_example.html 
+		bytecode nativecode
+
+clean: soft-clean
+	rm -f *.out ocamldoc/* \
+		easy_format_example.html 
+
 
 COMMON_INSTALL_FILES = META easy_format.cmi easy_format.mli
 BC_INSTALL_FILES = easy_format.cmo 
@@ -53,3 +60,27 @@ install:
 
 uninstall:
 	ocamlfind remove easy-format
+
+archive:
+	@echo "Making archive for version $(VERSION)"
+	$(MAKE) doc
+	rm -rf /tmp/easy-format /tmp/easy-format-$(VERSION) && \
+	 	cp -r . /tmp/easy-format && \
+		cd /tmp/easy-format && \
+			$(MAKE) clean && \
+			rm -f *~ easy-format*.tar* && \
+		cd /tmp && cp -r easy-format easy-format-$(VERSION) && \
+		tar czf easy-format.tar.gz easy-format && \
+		tar cjf easy-format.tar.bz2 easy-format && \
+		tar czf easy-format-$(VERSION).tar.gz easy-format-$(VERSION) && \
+		tar cjf easy-format-$(VERSION).tar.bz2 easy-format-$(VERSION)
+	mv /tmp/easy-format.tar.gz /tmp/easy-format.tar.bz2 .
+	mv /tmp/easy-format-$(VERSION).tar.gz /tmp/easy-format-$(VERSION).tar.bz2 .
+	cp easy-format.tar.gz easy-format.tar.bz2 $$WWW/
+	cp easy-format-$(VERSION).tar.gz easy-format-$(VERSION).tar.bz2 $$WWW/
+	cp LICENSE $$WWW/easy-format-license.txt
+	cp Changes $$WWW/easy-format-changes.txt
+	cp easy_format_example.html $$WWW/
+	cp -r ocamldoc $$WWW/easy-format-doc
+	echo 'let easy_format_version = "$(VERSION)"' \
+		> $$WWW/easy-format-version.ml
