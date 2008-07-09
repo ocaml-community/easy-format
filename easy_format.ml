@@ -8,7 +8,7 @@ type list_param = {
   space_before_closing : bool;
   stick_to_label : bool;
   align_closing : bool;
-  indent_items : int
+  indent_body : int
 }
 
 type label_param = {
@@ -18,30 +18,30 @@ type label_param = {
 
 module Param =
 struct
-  let spaced_list = {
+  let list_true = {
     space_after_opening = true;
     space_after_separator = true;
     space_before_closing = true;
     stick_to_label = true;
     align_closing = true;
-    indent_items = 2
+    indent_body = 2
   }
 
-  let compact_list = {
+  let list_false = {
     space_after_opening = false;
     space_after_separator = false;
     space_before_closing = false;
     stick_to_label = false;
     align_closing = false;
-    indent_items = 2
+    indent_body = 2
   }
     
-  let spaced_label = {
+  let label_true = {
     space_after_label = true;
     indent_after_label = 2;
   }
     
-  let compact_label = {
+  let label_false = {
     space_after_label = false;
     indent_after_label = 2;
   }
@@ -82,7 +82,7 @@ struct
 	else
 	  fprintf fmt "%s%s" op cl
     | x :: tl as l ->
-	let indent = p.indent_items in
+	let indent = p.indent_body in
 	pp_open_hvbox fmt indent;
 	pp_print_string fmt op;
 	if p.space_after_opening then
@@ -164,7 +164,7 @@ struct
 		   fprintf fmt "%s%s" op cl
 
 	     | x :: tl -> 
-		 let indent = p.indent_items in
+		 let indent = p.indent_body in
 		 pp_open_hvbox fmt indent;
 		 fprint_t fmt label;
 		 if lp.space_after_label then

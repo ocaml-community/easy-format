@@ -1,10 +1,9 @@
 (* $Id$ *)
 
 open Easy_format
-open Easy_format.Param
 
 let tuple_param = 
-  { compact_list with space_after_separator = true }
+  { Param.list_false with space_after_separator = true }
 
 let format_tuple f l =
   List (("(", ",", ")", tuple_param), List.map f l)
@@ -15,7 +14,7 @@ let format_float x =
 let format_array ~align_closing f a =
   let l = Array.to_list (Array.map f a) in
   List (("[|", ";", "|]", 
-	 { spaced_list with align_closing = align_closing }),
+	 { Param.list_true with align_closing = align_closing }),
 	l)
 
 let format_matrix ~wrap m =
@@ -36,23 +35,25 @@ let format_matrix ~wrap m =
 
 let format_record f l0 =
   let l = 
-    List.map (fun (s, x) -> Label ((Atom (s ^ ":"), spaced_label), f x)) l0 in
-  List (("{", ";", "}", spaced_list), l)
+    List.map 
+      (fun (s, x) -> Label ((Atom (s ^ ":"), Param.label_true), f x)) 
+      l0 in
+  List (("{", ";", "}", Param.list_true), l)
 
 let begin_style = 
-  { spaced_label with indent_after_label = 0 },
+  { Param.label_true with indent_after_label = 0 },
   ("begin", ";", "end", 
-   { spaced_list with stick_to_label = false })
+   { Param.list_true with stick_to_label = false })
 
 let curly_style =
-  spaced_label,
-  ("{", ";", "}", spaced_list)
+  Param.label_true,
+  ("{", ";", "}", Param.list_true)
 
 let format_function_definition (body_label, body_param) name param body =
   Label (
     (
       Label (
-	(Atom ("function " ^ name), spaced_label),
+	(Atom ("function " ^ name), Param.label_true),
 	List (("(", ",", ")", tuple_param), List.map (fun s -> Atom s) param)
       ), 
       body_label

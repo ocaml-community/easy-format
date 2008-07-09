@@ -5,8 +5,7 @@
 *)
 
 (**
-  This module offers classic C-style indentation.
-  It provides a simplified interface over
+  This module provides a functional, simplified layer over
   the Format module of the standard library.
 
   Input data must be first modelled as a tree using 3 kinds of nodes:
@@ -22,54 +21,79 @@
 
 
 type list_param = {
-  space_after_opening : bool;
-  space_after_separator : bool;
-  space_before_closing : bool;
-  stick_to_label : bool;
-  align_closing : bool;
-  indent_items : int; (** Extra indentation before the list body items when 
-			  align_closing is true. *)
+  space_after_opening : bool; (** Whether there must be some whitespace
+				  after the opening string. *)
+  space_after_separator : bool; (** Whether there must be some whitespace
+				    after the item separators. *)
+  space_before_closing : bool; (** Whether there must be some whitespace
+				   before the closing string. *)
+  stick_to_label : bool; (** Whether the opening string should be fused
+			     with the preceding label. *)
+  align_closing : bool; (** Whether the beginning of the 
+			    closing string must be aligned
+			    with the beginning of the opening string
+			    (stick_to_label = false) or
+			    with the beginning of the label if any
+			    (stick_to_label = true). *)
+  indent_body : int; (** Extra indentation of the list body.
+			 A typical value is 2. *)
 }
 
 type label_param = {
-  space_after_label : bool;
+  space_after_label : bool; (** Whether there must be some whitespace
+				after the label. *)
   indent_after_label : int; (** Extra indentation before the item
-				that comes after a label. *)
+				that comes after a label.
+				A typical value is 2.
+			    *)
 }
 
+(** Predefined sets of parameters *)
 module Param :
 sig
-  (** Predefined style with more space (all fields are true) *)
-  val spaced_list : list_param
-  val spaced_label : label_param
+  val list_true : list_param
+    (** All boolean fields set to true. indent_body = 2. *)
 
-  (** Predefined style with less space (all fields are false) *)
-  val compact_list : list_param
-  val compact_label : label_param
+  val label_true : label_param
+    (** All boolean fields set to true. indent_after_label = 2. *)
+
+  val list_false : list_param
+    (** All boolean fields set to false. indent_body = 2. *)
+    
+  val label_false : label_param
+    (** All boolean fields set to false. indent_after_label = 2. *)
 end
 
 
 type t =
-    Atom of string  (** Plain string. 
-		        Should not contain line feeds for optimal rendering. *)
+    Atom of string  (** Plain string normally without line feeds. *)
 
   | List of 
       (
-	string    (** Opening delimiter such as: "{"  "["  "("  "begin"  "" *)
-	* string  (** Item separator such as: ";"  ","  "" *)
-	* string  (** Closing delimiter such as: "}"  "]"  ")"  "end"  "" *)
+	string    (* opening *)
+	* string  (* separator *)
+	* string  (* closing *)
 	* list_param
       ) 
-      * t list    (** Items.
-		     Without label: array, list or tuple-like items.
-		     With label: record fields, object methods,
-		     definitions of all kinds.
-		  *)
+      * t list   
+	(** [List ((opening, separator, closing, param), elements)] *)
 
-  | Label of (t * label_param) * t   (** Labelled item *)
+  | Label of (t * label_param) * t 
+      (** [Label ((label, param), node)]: labelled node. *)
+(** The type of the tree to be pretty-printed. Each node contains
+    its own formatting parameters.
+    
+    Detail of a list node 
+    [List ((opening, separator, closing, param), elements)]:
+    
+    - [opening]: opening string such as ["\{"] ["\["] ["("] ["begin"] [""].
+    - [separator]: element separator such as [";"] [","] [""].
+    - [closing]: closing string such as ["\}"] ["\]"] [")"] ["end"] [""].
+    - [elements]: elements that constitute the list body.
 
+*)
 
-(** Indentation *)
+(** The regular pretty-printing functions *)
 module Pretty :
 sig
   val to_formatter : Format.formatter -> t -> unit
@@ -80,7 +104,7 @@ sig
   val to_stderr : t -> unit
 end
 
-(** No indentation at all, no newlines other than those in the input data. *)
+(** No spacing at all, no newlines other than those in the input data. *)
 module Compact :
 sig
   val to_buffer : Buffer.t -> t -> unit

@@ -9,16 +9,16 @@ all:
 	touch bytecode
 opt:
 	ocamlc -c easy_format.mli
-	ocamlopt -c easy_format.ml
+	ocamlopt -c -dtypes easy_format.ml
 	touch nativecode
 test: all simple_example.out
-	ocamlc -o test_easy_format easy_format.cmo test_easy_format.ml
+	ocamlc -o test_easy_format -dtypes easy_format.cmo test_easy_format.ml
 	./test_easy_format > test_easy_format.out
-	ocamlc -o lambda_example easy_format.cmo lambda_example.ml
+	ocamlc -o lambda_example -dtypes easy_format.cmo lambda_example.ml
 	./lambda_example > lambda_example.out
 
 simple_example: all simple_example.ml
-	ocamlc -o simple_example easy_format.cmo simple_example.ml
+	ocamlc -o simple_example -dtypes easy_format.cmo simple_example.ml
 simple_example.out: simple_example
 	./simple_example > simple_example.out
 
@@ -30,6 +30,7 @@ easy_format_example.html: simple_example.out simple_example.ml
 	echo '(* Output: ' >> easy_format_example.ml
 	cat simple_example.out >> easy_format_example.ml
 	echo '*)' >> easy_format_example.ml
+	ocamlc -c -dtypes easy_format_example.ml
 	caml2html easy_format_example.ml -t -o easy_format_example.html
 
 
@@ -40,7 +41,7 @@ soft-clean:
 
 clean: soft-clean
 	rm -f *.out ocamldoc/* \
-		easy_format_example.html 
+		easy_format_example.* 
 
 
 COMMON_INSTALL_FILES = META easy_format.cmi easy_format.mli
@@ -80,7 +81,7 @@ archive:
 	cp easy-format-$(VERSION).tar.gz easy-format-$(VERSION).tar.bz2 $$WWW/
 	cp LICENSE $$WWW/easy-format-license.txt
 	cp Changes $$WWW/easy-format-changes.txt
-	cp easy_format_example.html $$WWW/
-	cp -r ocamldoc $$WWW/easy-format-doc
+	cp easy_format_example.ml easy_format_example.html $$WWW/
+	cp ocamldoc/* $$WWW/easy-format-doc/
 	echo 'let easy_format_version = "$(VERSION)"' \
 		> $$WWW/easy-format-version.ml

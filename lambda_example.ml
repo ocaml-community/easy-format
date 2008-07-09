@@ -89,14 +89,14 @@ let _ =
 
 open Printf
 open Easy_format
-open Easy_format.Param
 
-let p1 = { spaced_label with indent_after_label = 1 }
-let p2 = { spaced_label with indent_after_label = 2 }
+
+let p1 = { Param.label_true with indent_after_label = 1 }
+let p2 = { Param.label_true with indent_after_label = 2 }
 
 let rec exp0_node = function
     Var s -> Atom s
-  | lam -> List (("(", "", ")", compact_list), [lambda_node lam])
+  | lam -> List (("(", "", ")", Param.list_false), [lambda_node lam])
 
 and app_node = function
     Apply (f, arg) -> Label ((app_node f, p2), exp0_node arg)

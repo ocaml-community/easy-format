@@ -1,7 +1,6 @@
 (* $Id$ *)
 
 open Easy_format
-open Easy_format.Param
 
 let make_data list_param label_param =
   let obj_param = ("{", ",", "}", list_param) in
@@ -60,9 +59,10 @@ let make_data list_param label_param =
 
 
 let _ = 
-  let x1 = make_data compact_list compact_label in
-  let x2 = make_data spaced_list spaced_label in
-  let x3 = make_data { spaced_list with stick_to_label = false } spaced_label 
+  let x1 = make_data Param.list_false Param.label_false in
+  let x2 = make_data Param.list_true Param.label_true in
+  let x3 = 
+    make_data { Param.list_true with stick_to_label = false } Param.label_true 
   in
   Easy_format.Pretty.to_stdout x1;
   print_newline ();
