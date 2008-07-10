@@ -19,26 +19,55 @@
   like "int main", "let x =" or "x:".
 *)
 
-
+(** List-formatting parameters. 
+    Always derive a new set of parameters from an existing record. 
+    See {!Easy_format.list}.
+*)
 type list_param = {
   space_after_opening : bool; (** Whether there must be some whitespace
-				  after the opening string. *)
+				  after the opening string. 
+				  Default: true *)
   space_after_separator : bool; (** Whether there must be some whitespace
-				    after the item separators. *)
+				    after the item separators.
+				    Default: true *)
+  space_before_separator : bool; (** Whether there must be some whitespace
+				     before the item separators.
+				     Default: false *)
+  separators_stick_left : bool; (** Whether the separators must
+				    stick to the item on the left.
+				    Default: true *)
   space_before_closing : bool; (** Whether there must be some whitespace
-				   before the closing string. *)
+				   before the closing string.
+				   Default: true *)
   stick_to_label : bool; (** Whether the opening string should be fused
-			     with the preceding label. *)
+			     with the preceding label.
+			     Default: true *)
   align_closing : bool; (** Whether the beginning of the 
 			    closing string must be aligned
 			    with the beginning of the opening string
 			    (stick_to_label = false) or
 			    with the beginning of the label if any
-			    (stick_to_label = true). *)
+			    (stick_to_label = true).
+			    Default: true *)
   indent_body : int; (** Extra indentation of the list body.
-			 A typical value is 2. *)
+			 Default: 2 *)
 }
 
+val list : list_param 
+  (** Default list-formatting parameters, using the default values
+      described in the type definition above.
+
+      In order to make code compatible with future versions of the library,
+      the record inheritance syntax should be used, e.g.
+      [ { list with align_closing = false } ].
+      If new record fields are added, the program would still compile
+      and work as before.
+  *)
+
+(** Label-formatting parameters. 
+    Always derive a new set of parameters from an existing record. 
+    See {!Easy_format.label}.
+*)
 type label_param = {
   space_after_label : bool; (** Whether there must be some whitespace
 				after the label. *)
@@ -48,21 +77,17 @@ type label_param = {
 			    *)
 }
 
-(** Predefined sets of parameters *)
-module Param :
-sig
-  val list_true : list_param
-    (** All boolean fields set to true. indent_body = 2. *)
+val label : label_param
+  (** Default label-formatting parameters, using the default values
+      described in the type definition above.
+      
+      In order to make code compatible with future versions of the library,
+      the record inheritance syntax should be used, e.g.
+      [ { label with indent_after_label = 0 } ].
+      If new record fields are added, the program would still compile
+      and work as before.
+ *)
 
-  val label_true : label_param
-    (** All boolean fields set to true. indent_after_label = 2. *)
-
-  val list_false : list_param
-    (** All boolean fields set to false. indent_body = 2. *)
-    
-  val label_false : label_param
-    (** All boolean fields set to false. indent_after_label = 2. *)
-end
 
 
 type t =
@@ -114,3 +139,23 @@ sig
   val to_stderr : t -> unit
   val to_formatter : Format.formatter -> t -> unit
  end
+
+
+(**/**)
+
+(** Deprecated. Predefined sets of parameters *)
+module Param :
+sig
+  val list_true : list_param
+    (** Deprecated. All boolean fields set to true. indent_body = 2. *)
+
+  val label_true : label_param
+    (** Deprecated. All boolean fields set to true. indent_after_label = 2. *)
+
+  val list_false : list_param
+    (** Deprecated. All boolean fields set to false. indent_body = 2. *)
+    
+  val label_false : label_param
+    (** Deprecated. All boolean fields set to false. indent_after_label = 2. *)
+end
+

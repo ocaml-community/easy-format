@@ -5,22 +5,44 @@ open Format
 type list_param = {
   space_after_opening : bool;
   space_after_separator : bool;
+  space_before_separator : bool;
+  separators_stick_left : bool;
   space_before_closing : bool;
   stick_to_label : bool;
   align_closing : bool;
   indent_body : int
 }
 
+let list = {
+  space_after_opening = true;
+  space_after_separator = true;
+  space_before_separator = false;
+  separators_stick_left = true;
+  space_before_closing = true;
+  stick_to_label = true;
+  align_closing = true;
+  indent_body = 2
+}
+
+
 type label_param = {
   space_after_label : bool;
   indent_after_label : int
 }
+
+let label = {
+  space_after_label = true;
+  indent_after_label = 2;
+}
+
 
 module Param =
 struct
   let list_true = {
     space_after_opening = true;
     space_after_separator = true;
+    space_before_separator = true;
+    separators_stick_left = true;
     space_before_closing = true;
     stick_to_label = true;
     align_closing = true;
@@ -30,6 +52,8 @@ struct
   let list_false = {
     space_after_opening = false;
     space_after_separator = false;
+    space_before_separator = false;
+    separators_stick_left = false;
     space_before_closing = false;
     stick_to_label = false;
     align_closing = false;
@@ -73,71 +97,132 @@ struct
 	  fprint_list2 fmt param l
 
     | Label (label, x) -> fprint_pair fmt label x
-      
-  (* Printing a list which is not after a label *)
-  and fprint_list fmt (op, sep, cl, p) = function
+
+  and fprint_list_body_stick_left fmt p sep hd tl =
+    fprint_t fmt hd;
+    List.iter (
+      fun x ->
+	if p.space_before_separator then
+	  pp_print_string fmt " ";
+	pp_print_string fmt sep;
+	if p.space_after_separator then
+	  pp_print_space fmt ()
+	else
+	  pp_print_cut fmt ();
+	fprint_t fmt x
+    ) tl
+
+  and fprint_list_body_stick_right fmt p sep hd tl =
+    fprint_t fmt hd;
+    List.iter (
+      fun x ->
+	if p.space_before_separator then
+	  pp_print_space fmt ()
+	else
+	  pp_print_cut fmt ();
+	pp_print_string fmt sep;
+	if p.space_after_separator then
+	  pp_print_string fmt " ";
+	fprint_t fmt x
+    ) tl
+
+  (* Either horizontal or vertical list *)
+  and fprint_list fmt ((op, sep, cl, p) as param) = function
       [] -> 
 	if p.space_after_opening || p.space_before_closing then
 	  fprintf fmt "%s %s" op cl
 	else
 	  fprintf fmt "%s%s" op cl
-    | x :: tl as l ->
-	let indent = p.indent_body in
-	pp_open_hvbox fmt indent;
-	pp_print_string fmt op;
-	if p.space_after_opening then
-	  pp_print_space fmt ()
+    | hd :: tl as l ->
+
+	if tl = [] || p.separators_stick_left then
+	  fprint_list_stick_left fmt param hd tl l
 	else
-	  pp_print_cut fmt ();
-
-	let open_extra, close_extra = extra_box l in
-	open_extra fmt;
-
-	fprint_t fmt x;
-	List.iter (
-	  fun x ->
-	    pp_print_string fmt sep;
-	    if p.space_after_separator then
-	      pp_print_space fmt ()
-	    else
-	      pp_print_cut fmt ();
-	    fprint_t fmt x
-	) tl;
-
-	close_extra fmt;
+	  fprint_list_stick_right fmt param hd tl l
 
 
-	if p.space_before_closing then
-	  pp_print_break fmt 1 (-indent)
+  and fprint_list_stick_left fmt (op, sep, cl, p) hd tl l =
+    let indent = p.indent_body in
+    pp_open_hvbox fmt indent;
+    pp_print_string fmt op;
+    if p.space_after_opening then 
+      pp_print_space fmt ()
+    else
+      pp_print_cut fmt ();
+    
+    let open_extra, close_extra = extra_box l in
+    open_extra fmt;
+    
+    fprint_list_body_stick_left fmt p sep hd tl;
+    
+    close_extra fmt;
+    
+    if p.space_before_closing then
+      pp_print_break fmt 1 (-indent)
+    else
+      pp_print_break fmt 0 (-indent);
+    pp_print_string fmt cl;
+    pp_close_box fmt ()
+
+  and fprint_list_stick_right fmt (op, sep, cl, p) hd tl l =
+    let base_indent = p.indent_body in
+    let sep_indent = 
+      String.length sep + (if p.space_after_separator then 1 else 0)
+    in
+    let indent = base_indent + sep_indent in
+    
+    pp_open_hvbox fmt indent;
+    pp_print_string fmt op;
+
+    if p.space_after_opening then 
+      pp_print_space fmt ()
+    else
+      pp_print_cut fmt ();
+
+    let open_extra, close_extra = extra_box l in
+    open_extra fmt;
+
+    fprint_t fmt hd;
+    List.iter (
+      fun x ->
+	if p.space_before_separator then
+	  pp_print_break fmt 1 (-sep_indent)
 	else
-	  pp_print_break fmt 0 (-indent);
-	pp_print_string fmt cl;
-	pp_close_box fmt ()
+	  pp_print_break fmt 0 (-sep_indent);
+	pp_print_string fmt sep;
+	if p.space_after_separator then
+	  pp_print_string fmt " ";
+	fprint_t fmt x
+    ) tl;
 
+    close_extra fmt;
+
+    if p.space_before_closing then
+      pp_print_break fmt 1 (-indent)
+    else
+      pp_print_break fmt 0 (-indent);
+    pp_print_string fmt cl;
+    pp_close_box fmt ()
+
+
+
+  (* Wrapped list *)
   and fprint_list2 fmt (op, sep, cl, p) = function
       [] -> 
 	if p.space_after_opening || p.space_before_closing then
 	  fprintf fmt "%s %s" op cl
 	else
 	  fprintf fmt "%s%s" op cl
-    | x :: tl ->
+    | hd :: tl ->
 	pp_print_string fmt op;
 	if p.space_after_opening then
 	  pp_print_string fmt " ";
 
 	pp_open_hovbox fmt 0;
-
-	fprint_t fmt x;
-	List.iter (
-	  fun x ->
-	    pp_print_string fmt sep;
-	    if p.space_after_separator then
-	      pp_print_space fmt ()
-	    else
-	      pp_print_cut fmt ();
-	    fprint_t fmt x
-	) tl;
-
+	if p.separators_stick_left then
+	  fprint_list_body_stick_left fmt p sep hd tl
+	else
+	  fprint_list_body_stick_right fmt p sep hd tl;
 	pp_close_box fmt ();
 
 	if p.space_before_closing then
@@ -177,20 +262,8 @@ struct
 
 		 let open_extra, close_extra = extra_box l in
 		 open_extra fmt;
-
-		 fprint_t fmt x;
-		 List.iter (
-		   fun x -> 
-		     pp_print_string fmt sep;
-		     if p.space_after_separator then
-		       pp_print_space fmt ()
-		     else
-		       pp_print_cut fmt ();
-		     fprint_t fmt x
-		 ) tl;
-
+		 fprint_list_body_stick_left fmt p sep x tl; (* FIXME *)
 		 close_extra fmt;
-
 
 		 if p.space_before_closing then
 		   pp_print_break fmt 1 (-indent)

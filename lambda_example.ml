@@ -91,12 +91,19 @@ open Printf
 open Easy_format
 
 
-let p1 = { Param.label_true with indent_after_label = 1 }
-let p2 = { Param.label_true with indent_after_label = 2 }
+let p1 = { label with indent_after_label = 1 }
+let p2 = { label with indent_after_label = 2 }
+
+let paren_style = 
+  { list with
+      space_after_opening = false;
+      space_before_closing = false;
+      align_closing = false
+  }
 
 let rec exp0_node = function
     Var s -> Atom s
-  | lam -> List (("(", "", ")", Param.list_false), [lambda_node lam])
+  | lam -> List (("(", "", ")", paren_style), [lambda_node lam])
 
 and app_node = function
     Apply (f, arg) -> Label ((app_node f, p2), exp0_node arg)
