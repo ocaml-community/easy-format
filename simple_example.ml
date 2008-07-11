@@ -25,8 +25,9 @@ let format_tuple f l =
 let format_float x =
   Atom (string_of_float x)
 
-let format_sum l =
-  List (("(", "+", ")", operator_param), List.map format_float l)
+let format_sum ?(wrap = `Wrap_atom_list) l =
+  List (("(", "+", ")", { operator_param with wrap = wrap }), 
+	List.map format_float l)
 
 let format_array ~align_closing f a =
   let l = Array.to_list (Array.map f a) in
@@ -78,8 +79,8 @@ let format_function_definition (body_label, body_param) name param body =
     List (body_param, List.map (fun s -> Atom s) body)
   )
 
-let print_margin () =
-  let margin = Format.get_margin () in
+let print_margin fmt () =
+  let margin = Format.pp_get_margin fmt () in
   print_newline ();
   for i = 1 to margin do
     print_char '+'
@@ -88,38 +89,38 @@ let print_margin () =
 
 
 let with_margin margin f x =
-  let margin0 = Format.get_margin () in
-  Format.set_margin margin;
-  print_margin ();
-  f x;
-  Format.set_margin margin0;
+  let fmt = Format.formatter_of_out_channel stdout in
+  Format.pp_set_margin fmt margin;
+  print_margin fmt ();
+  f fmt x;
+  Format.pp_print_flush fmt ();
   print_newline ()
 
 
-let print_tuple l =
-  Pretty.to_stdout (format_tuple format_float l)
+let print_tuple fmt l =
+  Pretty.to_formatter fmt (format_tuple format_float l)
 
-let print_sum l =
-  Pretty.to_stdout (format_sum l)
+let print_sum ?wrap fmt l =
+  Pretty.to_formatter fmt (format_sum ?wrap l)
 
-let print_matrix ~wrap m =
-  Pretty.to_stdout (format_matrix ~wrap m)
+let print_matrix ~wrap fmt m =
+  Pretty.to_formatter fmt (format_matrix ~wrap m)
 
-let print_function_definition style name param body =
-  Pretty.to_stdout (format_function_definition style name param body)
+let print_function_definition style name param fmt body =
+  Pretty.to_formatter fmt (format_function_definition style name param body)
 
 let _ =
-  let floats = Array.to_list (Array.init 20 float) in
+  let floats = Array.to_list (Array.init 10 float) in
 
   (* A simple tuple that fits on one line *)
   with_margin 80 print_tuple floats;
-(* (* CHECK Seems to crash the Format module. *)
-  (* Same, doesn't fit *)
-  with_margin 5 print_tuple [ 1.; 2.; 3.; 4. ];
-*)
+  with_margin 20 print_tuple floats;
 
   (* Printed as a sum *)
-  with_margin 50 print_sum floats;
+  with_margin 80 print_sum floats;
+  with_margin 20 (print_sum ~wrap:`Yes) floats;
+  with_margin 20 (print_sum ~wrap:`No) floats;
+
 
   (* Triangular array of arrays showing wrapping of lists of atoms *)
   let m = Array.init 30 (fun i -> Array.init i float) in

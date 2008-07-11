@@ -88,17 +88,19 @@ let _ =
   let x4 = 
     make_data { list with stick_to_label = false } label
   in
-(*
+
   Easy_format.Pretty.to_stdout x1;
   print_newline ();
+
   Easy_format.Pretty.to_stdout x2;
   print_newline ();
-*)
+
   Easy_format.Pretty.to_stdout x3;
   print_newline ();
-(*
+
   Easy_format.Pretty.to_stdout x4;
   print_newline ();
+
   Easy_format.Compact.to_stdout x1;
   print_newline ()
-*)
+

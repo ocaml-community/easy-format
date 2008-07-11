@@ -19,6 +19,16 @@
   like "int main", "let x =" or "x:".
 *)
 
+type wrap =
+    [ `Wrap_atom_list
+    | `Yes
+    | `No ]
+(** List wrapping conditions:
+    - [`Wrap_atom_list]: wrap if the list contains only atoms
+    - [`Yes]: always wrap
+    - [`No]: never wrap
+*)
+
 (** List-formatting parameters. 
     Always derive a new set of parameters from an existing record. 
     See {!Easy_format.list}.
@@ -49,6 +59,10 @@ type list_param = {
 			    with the beginning of the label if any
 			    (stick_to_label = true).
 			    Default: true *)
+  wrap : wrap; (** Defines under which conditions the list body
+		   may be wrapped, i.e. allow several lines
+		   and several list items per line.
+		   Default: [`Wrap_atom_list] *)
   indent_body : int; (** Extra indentation of the list body.
 			 Default: 2 *)
 }
