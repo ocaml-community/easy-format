@@ -1,4 +1,5 @@
 $Id$
 
 * Add `Horizontal and `Vertical no-wrapping styles
-* Add support for tags
+* Add support for HTML-like markup (tags + escaping)
+* Add support for tables (using tabs)

@@ -87,8 +87,61 @@ type t =
   | Label of (t * label_param) * t
 
 
+
 module Pretty =
 struct
+
+  (*
+    Relies on the fact that makr_open_tag and mark_close_tag
+    are called exactly once before calling pp_output_string once.
+    It's a reasonable assumption although not guaranteed by the 
+    documentation of the Format module.
+  *)
+  let pp_set_escape fmt escape = 
+    let print0, flush0 = pp_get_formatter_output_functions fmt () in
+    let tagf0 = pp_get_formatter_tag_functions fmt () in
+    
+    let is_tag = ref false in
+    
+    let mot tag =
+      is_tag := true;
+      tagf0.mark_open_tag tag
+    in
+    
+    let mct tag =
+      is_tag := true;
+      tagf0.mark_close_tag tag
+    in
+    
+    let print s p n =
+      if !is_tag then
+	(print0 s p n;
+	 is_tag := false)
+      else
+	escape print0 s p n
+    in
+    
+    let tagf = {
+      tagf0 with
+	mark_open_tag = mot;
+	mark_close_tag = mct
+    }
+    in
+    pp_set_formatter_output_functions fmt print flush0;
+    pp_set_formatter_tag_functions fmt tagf
+      
+
+  (* More handy, less efficient. *)
+  let pp_set_escape_string fmt esc =
+    let escape print s p n =
+      let s0 = String.sub s p n in
+      let s1 = esc s0 in
+      print s1 0 (String.length s1)
+    in
+    pp_set_escape fmt escape
+
+
+
   let extra_box p l =
     let wrap =
       match p.wrap_body with
