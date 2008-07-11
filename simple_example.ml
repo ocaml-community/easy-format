@@ -22,33 +22,34 @@ let operator_param =
 let format_tuple f l =
   List (("(", ",", ")", tuple_param), List.map f l)
 
+let format_int x =
+  Atom (string_of_int x)
+
 let format_float x =
-  Atom (string_of_float x)
+  Atom (Printf.sprintf "%.5f" x)
 
 let format_sum ?(wrap = `Wrap_atom_list) l =
-  List (("(", "+", ")", { operator_param with wrap = wrap }), 
-	List.map format_float l)
+  List (("(", "+", ")", { operator_param with wrap_body = wrap }), 
+	List.map format_int l)
 
-let format_array ~align_closing f a =
+let format_array ~align_closing ~wrap f a =
   let l = Array.to_list (Array.map f a) in
   List (("[|", ";", "|]", 
-	 { list with align_closing = align_closing }),
+	 { list with
+	     align_closing = align_closing;
+	     wrap_body = wrap }),
 	l)
 
-let format_matrix ~wrap m =
-  match wrap with
-      `Cells ->
-	format_array ~align_closing:true 
-	  (format_array ~align_closing:false format_float) m
-    | `Rows ->
-	format_array ~align_closing:false 
-	  (format_array ~align_closing:true format_float) m
-    | `Both ->
-	format_array ~align_closing:false 
-	  (format_array ~align_closing:false format_float) m
-    | `None ->
-	format_array ~align_closing:true 
-	  (format_array ~align_closing:true format_float) m
+let format_matrix ~align_closing ~wrap m =
+  let b1, b2 =
+    match align_closing with
+	`Cells -> true, false
+      | `Rows -> false, true
+      | `Both -> false, false
+      | `None -> true, true
+  in
+  format_array ~align_closing:b1 ~wrap
+    (format_array ~align_closing:b2 ~wrap format_float) m
 
 
 let format_record f l0 =
@@ -98,36 +99,37 @@ let with_margin margin f x =
 
 
 let print_tuple fmt l =
-  Pretty.to_formatter fmt (format_tuple format_float l)
+  Pretty.to_formatter fmt (format_tuple format_int l)
 
 let print_sum ?wrap fmt l =
   Pretty.to_formatter fmt (format_sum ?wrap l)
 
-let print_matrix ~wrap fmt m =
-  Pretty.to_formatter fmt (format_matrix ~wrap m)
+let print_matrix ~align_closing ~wrap fmt m =
+  Pretty.to_formatter fmt (format_matrix ~align_closing ~wrap m)
 
 let print_function_definition style name param fmt body =
   Pretty.to_formatter fmt (format_function_definition style name param body)
 
 let _ =
-  let floats = Array.to_list (Array.init 10 float) in
+  let ints = Array.to_list (Array.init 10 (fun i -> i)) in
 
   (* A simple tuple that fits on one line *)
-  with_margin 80 print_tuple floats;
-  with_margin 20 print_tuple floats;
+  with_margin 80 print_tuple ints;
+  with_margin 20 print_tuple ints;
 
   (* Printed as a sum *)
-  with_margin 80 print_sum floats;
-  with_margin 20 (print_sum ~wrap:`Yes) floats;
-  with_margin 20 (print_sum ~wrap:`No) floats;
+  with_margin 80 print_sum ints;
+  with_margin 20 (print_sum ~wrap:`Yes) ints;
+  with_margin 20 (print_sum ~wrap:`No) ints;
 
 
   (* Triangular array of arrays showing wrapping of lists of atoms *)
-  let m = Array.init 30 (fun i -> Array.init i float) in
-  with_margin 80 (print_matrix ~wrap: `None) m;
-  with_margin 80 (print_matrix ~wrap: `Cells) m;
-  with_margin 80 (print_matrix ~wrap: `Rows) m;
-  with_margin 80 (print_matrix ~wrap: `Both) m;
+  let m = Array.init 20 (fun i -> Array.init i (fun i -> sqrt (float i))) in
+  with_margin 80 (print_matrix ~align_closing: `None ~wrap: `No) m;
+  with_margin 80 (print_matrix ~align_closing: `None ~wrap: `Yes) m;
+  with_margin 80 (print_matrix ~align_closing: `Cells ~wrap: `Yes) m;
+  with_margin 80 (print_matrix ~align_closing: `Rows ~wrap: `Yes) m;
+  with_margin 80 (print_matrix ~align_closing: `Both ~wrap: `Yes) m;
 
   (* A function definition, showed with different right-margin settings
      and either begin-end or { } around the function body. *)

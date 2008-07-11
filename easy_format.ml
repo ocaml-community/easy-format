@@ -15,7 +15,7 @@ type list_param = {
   space_before_closing : bool;
   stick_to_label : bool;
   align_closing : bool;
-  wrap : wrap;
+  wrap_body : wrap;
   indent_body : int
 }
 
@@ -27,7 +27,7 @@ let list = {
   space_before_closing = true;
   stick_to_label = true;
   align_closing = true;
-  wrap = `Wrap_atom_list;
+  wrap_body = `Wrap_atom_list;
   indent_body = 2
 }
 
@@ -53,7 +53,7 @@ struct
     space_before_closing = true;
     stick_to_label = true;
     align_closing = true;
-    wrap = `Wrap_atom_list;
+    wrap_body = `Wrap_atom_list;
     indent_body = 2
   }
 
@@ -65,7 +65,7 @@ struct
     space_before_closing = false;
     stick_to_label = false;
     align_closing = false;
-    wrap = `Wrap_atom_list;
+    wrap_body = `Wrap_atom_list;
     indent_body = 2
   }
     
@@ -91,7 +91,7 @@ module Pretty =
 struct
   let extra_box p l =
     let wrap =
-      match p.wrap with
+      match p.wrap_body with
 	  `Yes -> true
 	| `No -> false
 	| `Wrap_atom_list ->
