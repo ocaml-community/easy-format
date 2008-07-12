@@ -28,7 +28,7 @@ let format_int x =
 let format_float x =
   Atom (Printf.sprintf "%.5f" x)
 
-let format_sum ?(wrap = `Wrap_atom_list) l =
+let format_sum ?(wrap = `Wrap_atoms) l =
   List (("(", "+", ")", { operator_param with wrap_body = wrap }), 
 	List.map format_int l)
 
@@ -40,16 +40,14 @@ let format_array ~align_closing ~wrap f a =
 	     wrap_body = wrap }),
 	l)
 
-let format_matrix ~align_closing ~wrap m =
-  let b1, b2 =
-    match align_closing with
-	`Cells -> true, false
-      | `Rows -> false, true
-      | `Both -> false, false
-      | `None -> true, true
-  in
-  format_array ~align_closing:b1 ~wrap
-    (format_array ~align_closing:b2 ~wrap format_float) m
+let format_matrix 
+    ?(align_closing1 = true) 
+    ?(align_closing2 = true)
+    ?(wrap1 = `Wrap_atoms)
+    ?(wrap2 = `Wrap_atoms)
+    m =
+  format_array ~align_closing: align_closing1 ~wrap: wrap1
+    (format_array ~align_closing: align_closing2 ~wrap: wrap2 format_float) m
 
 
 let format_record f l0 =
@@ -82,7 +80,6 @@ let format_function_definition (body_label, body_param) name param body =
 
 let print_margin fmt () =
   let margin = Format.pp_get_margin fmt () in
-  print_newline ();
   for i = 1 to margin do
     print_char '+'
   done;
@@ -97,6 +94,8 @@ let with_margin margin f x =
   Format.pp_print_flush fmt ();
   print_newline ()
 
+let print s =
+  Printf.printf "\n*** %s ***\n%!" s
 
 let print_tuple fmt l =
   Pretty.to_formatter fmt (format_tuple format_int l)
@@ -104,8 +103,9 @@ let print_tuple fmt l =
 let print_sum ?wrap fmt l =
   Pretty.to_formatter fmt (format_sum ?wrap l)
 
-let print_matrix ~align_closing ~wrap fmt m =
-  Pretty.to_formatter fmt (format_matrix ~align_closing ~wrap m)
+let print_matrix ?align_closing1 ?align_closing2 ?wrap1 ?wrap2 m fmt () =
+  Pretty.to_formatter fmt 
+    (format_matrix ?align_closing1 ?align_closing2 ?wrap1 ?wrap2 m)
 
 let print_function_definition style name param fmt body =
   Pretty.to_formatter fmt (format_function_definition style name param body)
@@ -119,17 +119,43 @@ let _ =
 
   (* Printed as a sum *)
   with_margin 80 print_sum ints;
-  with_margin 20 (print_sum ~wrap:`Yes) ints;
-  with_margin 20 (print_sum ~wrap:`No) ints;
+  with_margin 20 (print_sum ~wrap:`Always_wrap) ints;
+  with_margin 20 (print_sum ~wrap:`Never_wrap) ints;
+
 
 
   (* Triangular array of arrays showing wrapping of lists of atoms *)
   let m = Array.init 20 (fun i -> Array.init i (fun i -> sqrt (float i))) in
-  with_margin 80 (print_matrix ~align_closing: `None ~wrap: `No) m;
-  with_margin 80 (print_matrix ~align_closing: `None ~wrap: `Yes) m;
-  with_margin 80 (print_matrix ~align_closing: `Cells ~wrap: `Yes) m;
-  with_margin 80 (print_matrix ~align_closing: `Rows ~wrap: `Yes) m;
-  with_margin 80 (print_matrix ~align_closing: `Both ~wrap: `Yes) m;
+
+  (* Default style *)
+  print "default style";
+  with_margin 80 (print_matrix m) ();
+
+  (* Other styles *)
+  print "style 1";
+  with_margin 80 (print_matrix 
+		    ~align_closing1: false ~align_closing2: false m) ();
+  print "style 2";
+  with_margin 80 (print_matrix
+		    ~align_closing1: false ~align_closing2: false
+		    ~wrap2: `Never_wrap m) ();
+  print "style 3";
+  with_margin 80 (print_matrix 
+		    ~align_closing1: false ~align_closing2: false
+		    ~wrap2: `Always_wrap m) ();
+  print "style 4";
+  with_margin 80 (print_matrix 
+		    ~align_closing2: false
+		    ~wrap1: `Always_wrap ~wrap2: `Always_wrap m) ();
+  print "style 5";
+  with_margin 80 (print_matrix 
+		    ~align_closing1: false
+		    ~wrap1: `Always_wrap ~wrap2: `Always_wrap m) ();
+  print "style 6";
+  with_margin 80 (print_matrix ~wrap2: `Force_breaks m) ();
+  print "style 7";
+  with_margin 80 (print_matrix ~wrap2: `No_breaks m) ();
+
 
   (* A function definition, showed with different right-margin settings
      and either begin-end or { } around the function body. *)

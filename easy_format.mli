@@ -20,13 +20,21 @@
 *)
 
 type wrap =
-    [ `Wrap_atom_list
-    | `Yes
-    | `No ]
+    [ `Wrap_atoms
+    | `Always_wrap
+    | `Never_wrap
+    | `Force_breaks
+    | `No_breaks ]
 (** List wrapping conditions:
-    - [`Wrap_atom_list]: wrap if the list contains only atoms
-    - [`Yes]: always wrap
-    - [`No]: never wrap
+    - [`Wrap_atoms]: wrap if the list contains only atoms
+    - [`Always_wrap]: always wrap
+    - [`Never_wrap]: never wrap, 
+      i.e. the list is either horizontal or vertical
+    - [`Force_breaks]: align vertically, 
+      i.e. always break line between list items and 
+      align the left edge of each item.
+    - [`No_breaks]: align horizontally, 
+      i.e. never break line between list items
 *)
 
 (** List-formatting parameters. 

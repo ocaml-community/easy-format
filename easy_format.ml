@@ -3,9 +3,11 @@
 open Format
 
 type wrap =
-    [ `Wrap_atom_list
-    | `Yes
-    | `No ]
+    [ `Wrap_atoms
+    | `Always_wrap
+    | `Never_wrap
+    | `Force_breaks
+    | `No_breaks ]
 
 type list_param = {
   space_after_opening : bool;
@@ -27,7 +29,7 @@ let list = {
   space_before_closing = true;
   stick_to_label = true;
   align_closing = true;
-  wrap_body = `Wrap_atom_list;
+  wrap_body = `Wrap_atoms;
   indent_body = 2
 }
 
@@ -53,7 +55,7 @@ struct
     space_before_closing = true;
     stick_to_label = true;
     align_closing = true;
-    wrap_body = `Wrap_atom_list;
+    wrap_body = `Wrap_atoms;
     indent_body = 2
   }
 
@@ -65,7 +67,7 @@ struct
     space_before_closing = false;
     stick_to_label = false;
     align_closing = false;
-    wrap_body = `Wrap_atom_list;
+    wrap_body = `Wrap_atoms;
     indent_body = 2
   }
     
@@ -141,13 +143,22 @@ struct
     pp_set_escape fmt escape
 
 
+  let pp_open_xbox fmt p indent =
+    match p.wrap_body with
+	`Always_wrap
+      | `Never_wrap
+      | `Wrap_atoms -> pp_open_hvbox fmt indent
+      | `Force_breaks -> pp_open_vbox fmt indent
+      | `No_breaks -> pp_open_hbox fmt ()
 
   let extra_box p l =
     let wrap =
       match p.wrap_body with
-	  `Yes -> true
-	| `No -> false
-	| `Wrap_atom_list ->
+	  `Always_wrap -> true
+	| `Never_wrap
+	| `Force_breaks
+	| `No_breaks -> false
+	| `Wrap_atoms ->
 	    List.for_all (function Atom _ -> true | _ -> false) l
     in
     if wrap then
@@ -156,6 +167,20 @@ struct
     else
       ((fun fmt -> ()),
        (fun fmt -> ()))
+
+
+  let pp_open_nonaligned_box fmt p indent l =
+    match p.wrap_body with
+	`Always_wrap -> pp_open_hovbox fmt indent
+      | `Never_wrap -> pp_open_hvbox fmt indent
+      | `Wrap_atoms -> 
+	  if List.for_all (function Atom _ -> true | _ -> false) l then
+	    pp_open_hovbox fmt indent
+	  else
+	    pp_open_hvbox fmt indent
+      | `Force_breaks -> pp_open_vbox fmt indent
+      | `No_breaks -> pp_open_hbox fmt ()
+
 
   let rec fprint_t fmt = function
       Atom s -> fprintf fmt "%s" s
@@ -221,7 +246,7 @@ struct
 
   and fprint_list_stick_left fmt label (op, sep, cl, p) hd tl l =
     let indent = p.indent_body in
-    pp_open_hvbox fmt indent;
+    pp_open_xbox fmt p indent;
     fprint_opt_label fmt label; 
     pp_print_string fmt op;
     if p.space_after_opening then 
@@ -248,7 +273,7 @@ struct
     in
     let indent = base_indent + sep_indent in
     
-    pp_open_hvbox fmt indent;
+    pp_open_xbox fmt p indent;
     fprint_opt_label fmt label; 
     pp_print_string fmt op;
 
@@ -284,19 +309,19 @@ struct
 
 
 
-  (* Wrapped list *)
+  (* align_closing = false *)
   and fprint_list2 fmt (op, sep, cl, p) = function
       [] -> 
 	if p.space_after_opening || p.space_before_closing then
 	  fprintf fmt "%s %s" op cl
 	else
 	  fprintf fmt "%s%s" op cl
-    | hd :: tl ->
+    | hd :: tl as l ->
 	pp_print_string fmt op;
 	if p.space_after_opening then
 	  pp_print_string fmt " ";
 
-	pp_open_hovbox fmt 0;
+	pp_open_nonaligned_box fmt p 0 l ;
 	if p.separators_stick_left then
 	  fprint_list_body_stick_left fmt p sep hd tl
 	else
@@ -307,6 +332,8 @@ struct
 	  pp_print_string fmt " ";
 	pp_print_string fmt cl
 	  
+
+
   (* Printing a label:value pair.
      
      The opening bracket stays on the same line as the key, no matter what,
