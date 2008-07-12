@@ -87,6 +87,7 @@ type t =
     Atom of string
   | List of (string * string * string * list_param) * t list
   | Label of (t * label_param) * t
+  | Custom of (formatter -> unit)
 
 
 
@@ -191,6 +192,7 @@ struct
 	  fprint_list2 fmt param l
 
     | Label (label, x) -> fprint_pair fmt label x
+    | Custom f -> f fmt
 
   and fprint_list_body_stick_left fmt p sep hd tl =
     fprint_t fmt hd;
@@ -389,7 +391,11 @@ struct
       Atom s -> Buffer.add_string buf s
     | List (param, l) -> fprint_list buf param l
     | Label (label, x) -> fprint_pair buf label x
-	
+    | Custom f -> 
+	(* Will most likely not be compact *)
+	let fmt = formatter_of_buffer buf in
+	f fmt;
+	pp_print_flush fmt ()
 
   and fprint_list buf (op, sep, cl, _) = function
       [] -> bprintf buf "%s%s" op cl

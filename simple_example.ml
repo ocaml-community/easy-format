@@ -161,6 +161,8 @@ let _ =
   with_margin 80 (print_matrix ~wrap1: `No_breaks m) ();
   print "style 10";
   with_margin 80 (print_matrix ~wrap1: `No_breaks ~wrap2: `Force_breaks m) ();
+  print "style 11";
+  with_margin 80 (print_matrix ~wrap2: `Never_wrap m) ();
 
 
   (* A function definition, showed with different right-margin settings

@@ -123,20 +123,25 @@ type t =
 	* list_param
       ) 
       * t list   
-	(** [List ((opening, separator, closing, param), elements)] *)
+	(** [List ((opening, separator, closing, param), nodes)] *)
 
   | Label of (t * label_param) * t 
       (** [Label ((label, param), node)]: labelled node. *)
+
+  | Custom of (Format.formatter -> unit)
+      (** User-defined printing function that allows to use the
+	  Format module directly if necessary. It is responsible
+	  for leaving the formatter in a clean state. *)
 (** The type of the tree to be pretty-printed. Each node contains
     its own formatting parameters.
     
     Detail of a list node 
-    [List ((opening, separator, closing, param), elements)]:
+    [List ((opening, separator, closing, param), nodes)]:
     
-    - [opening]: opening string such as ["\{"] ["\["] ["("] ["begin"] [""].
-    - [separator]: element separator such as [";"] [","] [""].
-    - [closing]: closing string such as ["\}"] ["\]"] [")"] ["end"] [""].
-    - [elements]: elements that constitute the list body.
+    - [opening]: opening string such as ["\{"] ["\["] ["("] ["begin"] [""] etc.
+    - [separator]: node separator such as [";"] [","] [""] ["+"] ["|"] etc.
+    - [closing]: closing string such as ["\}"] ["\]"] [")"] ["end"] [""] etc.
+    - [nodes]: elements of the list.
 
 *)
 
@@ -151,7 +156,8 @@ sig
   val to_stderr : t -> unit
 end
 
-(** No spacing at all, no newlines other than those in the input data. *)
+(** No spacing or newlines other than those in the input data
+    or those produced by [Custom] printing. *)
 module Compact :
 sig
   val to_buffer : Buffer.t -> t -> unit
