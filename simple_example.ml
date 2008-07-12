@@ -154,7 +154,13 @@ let _ =
   print "style 6";
   with_margin 80 (print_matrix ~wrap2: `Force_breaks m) ();
   print "style 7";
+  with_margin 80 (print_matrix ~wrap1: `Always_wrap ~wrap2: `No_breaks m) ();
+  print "style 8";
   with_margin 80 (print_matrix ~wrap2: `No_breaks m) ();
+  print "style 9";
+  with_margin 80 (print_matrix ~wrap1: `No_breaks m) ();
+  print "style 10";
+  with_margin 80 (print_matrix ~wrap1: `No_breaks ~wrap2: `Force_breaks m) ();
 
 
   (* A function definition, showed with different right-margin settings
