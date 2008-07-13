@@ -410,7 +410,11 @@ struct
       | _ -> 
 	  let indent = lp.indent_after_label in
 	  pp_open_hvbox fmt 0;
+
+	  open_tag fmt lp.label_style;
 	  fprint_t fmt lab;
+	  close_tag fmt lp.label_style;
+
 	  if lp.space_after_label then
 	    pp_print_break fmt 1 indent
 	  else
