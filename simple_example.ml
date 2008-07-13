@@ -1,6 +1,26 @@
 (* $Id$ *)
 
+(*
+  A fairly complete demonstration of the features provided
+  by Easy-format.
+*)
+
+
 open Easy_format
+
+
+let list = 
+  { list with
+      list_style = Some "list";
+      opening_style = Some "op";
+      body_style = Some "body";
+      separator_style = Some "sep";
+      closing_style = Some "cl"
+  }
+let atom = { atom_style = Some "atom" }
+let label = { label with label_style = Some "label" }
+
+
 
 let tuple_param = 
   { list with
@@ -19,14 +39,39 @@ let operator_param =
       align_closing = true
   }
 
+
+let html_escape_string s =
+  let buf = Buffer.create (2 * String.length s) in
+  for i = 0 to String.length s - 1 do
+    match s.[i] with
+	'&' -> Buffer.add_string buf "&amp;"
+      | '<' -> Buffer.add_string buf "&lt;"
+      | '>' -> Buffer.add_string buf "&gt;"
+      | c -> Buffer.add_char buf c
+  done;
+  Buffer.contents buf
+
+let html_escape = `Escape_string html_escape_string
+let html_style = [
+  "atom", { tag_open = "<a>"; tag_close = "</a>" };
+  "body", { tag_open = "<lb>"; tag_close = "</lb>" };
+  "list", { tag_open = "<l>"; tag_close = "</l>" };
+  "op", { tag_open = "<op>"; tag_close = "</op>" };
+  "cl", { tag_open = "<cl>"; tag_close = "</cl>" };
+  "sep", { tag_open = "<sep>"; tag_close = "</sep>" };
+  "label", { tag_open = "<la>"; tag_close = "</la>" };
+]
+
+
+
 let format_tuple f l =
   List (("(", ",", ")", tuple_param), List.map f l)
 
 let format_int x =
-  Atom (string_of_int x)
+  Atom (string_of_int x, atom)
 
 let format_float x =
-  Atom (Printf.sprintf "%.5f" x)
+  Atom (Printf.sprintf "%.5f" x, atom)
 
 let format_sum ?(wrap = `Wrap_atoms) l =
   List (("(", "+", ")", { operator_param with wrap_body = wrap }), 
@@ -53,7 +98,7 @@ let format_matrix
 let format_record f l0 =
   let l = 
     List.map 
-      (fun (s, x) -> Label ((Atom (s ^ ":"), label), f x)) 
+      (fun (s, x) -> Label ((Atom (s ^ ":", atom), label), f x)) 
       l0 in
   List (("{", ";", "}", list), l)
 
@@ -70,12 +115,13 @@ let format_function_definition (body_label, body_param) name param body =
   Label (
     (
       Label (
-	(Atom ("function " ^ name), label),
-	List (("(", ",", ")", tuple_param), List.map (fun s -> Atom s) param)
+	(Atom ("function " ^ name, atom), label),
+	List (("(", ",", ")", tuple_param), 
+	      List.map (fun s -> Atom (s, atom)) param)
       ), 
       body_label
     ),
-    List (body_param, List.map (fun s -> Atom s) body)
+    List (body_param, List.map (fun s -> Atom (s, atom)) body)
   )
 
 let print_margin fmt () =
@@ -86,9 +132,11 @@ let print_margin fmt () =
   print_newline ()
 
 
-let with_margin margin f x =
+let with_margin ?(html = false) margin f x =
   let fmt = Format.formatter_of_out_channel stdout in
   Format.pp_set_margin fmt margin;
+  if html then
+    Pretty.define_styles fmt html_escape html_style;
   print_margin fmt ();
   f fmt x;
   Format.pp_print_flush fmt ();
@@ -119,6 +167,7 @@ let _ =
 
   (* Printed as a sum *)
   with_margin 80 print_sum ints;
+  with_margin ~html:true 80 print_sum ints;
   with_margin 20 (print_sum ~wrap:`Always_wrap) ints;
   with_margin 20 (print_sum ~wrap:`Never_wrap) ints;
 
@@ -167,17 +216,22 @@ let _ =
 
   (* A function definition, showed with different right-margin settings
      and either begin-end or { } around the function body. *)
+  let program html margin style =
+    with_margin ~html margin
+      (print_function_definition
+	 style
+	 "hello" ["arg1";"arg2";"arg3"]) 
+      [
+	"print \"hello\"";
+	"return (1 < 2)"
+      ]
+  in
   List.iter (
     fun style ->
       List.iter (
 	fun margin ->
-	  with_margin margin
-	    (print_function_definition
-	       style
-	       "hello" ["arg1";"arg2";"arg3"]) [
-	      "print \"hello\"";
-	      "return foo"
-	    ]
+	  program false margin style;
+	  program true margin style
       ) [ 10; 20; 30; 40; 80 ]
   ) [ curly_style; begin_style ]
 

@@ -27,7 +27,7 @@ type wrap =
     | `No_breaks ]
 (** List wrapping conditions:
     - [`Wrap_atoms]: wrap if the list contains only atoms
-    - [`Always_wrap]: always wrap
+    - [`Always_wrap]: always wrap when needed
     - [`Never_wrap]: never wrap, 
       i.e. the list is either horizontal or vertical
     - [`Force_breaks]: align vertically, 
@@ -37,6 +37,23 @@ type wrap =
       i.e. never break line between list items
 *)
 
+
+type style_name = string
+
+type style = {
+  tag_open : string;
+  tag_close : string
+}
+    (** Pair of opening and closing tags that are inserted around
+	text after pretty-printing. *)
+
+type atom_param = {
+  atom_style : style_name option; (** Default: [None] *)
+}
+
+val atom : atom_param
+
+
 (** List-formatting parameters. 
     Always derive a new set of parameters from an existing record. 
     See {!Easy_format.list}.
@@ -44,35 +61,41 @@ type wrap =
 type list_param = {
   space_after_opening : bool; (** Whether there must be some whitespace
 				  after the opening string. 
-				  Default: true *)
+				  Default: [true] *)
   space_after_separator : bool; (** Whether there must be some whitespace
 				    after the item separators.
-				    Default: true *)
+				    Default: [true] *)
   space_before_separator : bool; (** Whether there must be some whitespace
 				     before the item separators.
-				     Default: false *)
+				     Default: [false] *)
   separators_stick_left : bool; (** Whether the separators must
 				    stick to the item on the left.
-				    Default: true *)
+				    Default: [true] *)
   space_before_closing : bool; (** Whether there must be some whitespace
 				   before the closing string.
-				   Default: true *)
+				   Default: [true] *)
   stick_to_label : bool; (** Whether the opening string should be fused
 			     with the preceding label.
-			     Default: true *)
+			     Default: [true] *)
   align_closing : bool; (** Whether the beginning of the 
 			    closing string must be aligned
 			    with the beginning of the opening string
 			    (stick_to_label = false) or
 			    with the beginning of the label if any
 			    (stick_to_label = true).
-			    Default: true *)
+			    Default: [true] *)
   wrap_body : wrap; (** Defines under which conditions the list body
 			may be wrapped, i.e. allow several lines
 			and several list items per line.
 			Default: [`Wrap_atom_list] *)
   indent_body : int; (** Extra indentation of the list body.
-			 Default: 2 *)
+			 Default: [2] *)
+
+  list_style : style_name option; (** Default: [None] *)
+  opening_style : style_name option; (** Default: [None] *)
+  body_style : style_name option; (** Default: [None] *)
+  separator_style : style_name option; (** Default: [None] *)
+  closing_style : style_name option; (** Default: [None] *)
 }
 
 val list : list_param 
@@ -92,11 +115,13 @@ val list : list_param
 *)
 type label_param = {
   space_after_label : bool; (** Whether there must be some whitespace
-				after the label. *)
+				after the label. 
+				Default: [true] *)
   indent_after_label : int; (** Extra indentation before the item
 				that comes after a label.
-				A typical value is 2.
+				Default: [2]
 			    *)
+  label_style : style_name option; (** Default: [None] *)
 }
 
 val label : label_param
@@ -113,7 +138,8 @@ val label : label_param
 
 
 type t =
-    Atom of string  (** Plain string normally without line feeds. *)
+    Atom of string * atom_param (** Plain string normally
+				    without line breaks. *)
 
   | List of 
       (
@@ -145,15 +171,25 @@ type t =
 
 *)
 
+type escape = 
+    [ `None 
+    | `Escape of 
+	((string -> int -> int -> unit) -> string -> int -> int -> unit)
+    | `Escape_string of (string -> string) ]
+
+type styles = (style_name * style) list
+
 (** The regular pretty-printing functions *)
 module Pretty :
 sig
+  val define_styles : Format.formatter -> escape -> styles -> unit
   val to_formatter : Format.formatter -> t -> unit
-  val to_buffer : Buffer.t -> t -> unit
-  val to_string : t -> string
-  val to_channel : out_channel -> t -> unit
-  val to_stdout : t -> unit
-  val to_stderr : t -> unit
+
+  val to_buffer : ?escape:escape -> ?styles:styles -> Buffer.t -> t -> unit
+  val to_string : ?escape:escape -> ?styles:styles -> t -> string
+  val to_channel : ?escape:escape -> ?styles:styles -> out_channel -> t -> unit
+  val to_stdout : ?escape:escape -> ?styles:styles -> t -> unit
+  val to_stderr : ?escape:escape -> ?styles:styles -> t -> unit
 end
 
 (** No spacing or newlines other than those in the input data

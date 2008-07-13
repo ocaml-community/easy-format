@@ -102,7 +102,7 @@ let paren_style =
   }
 
 let rec exp0_node = function
-    Var s -> Atom s
+    Var s -> Atom (s, atom)
   | lam -> List (("(", "", ")", paren_style), [lambda_node lam])
 
 and app_node = function
@@ -111,7 +111,7 @@ and app_node = function
       
 and lambda_node = function
     Lambda (s, lam) ->
-      Label ((Atom (sprintf "\\%s." s), p1), lambda_node lam)
+      Label ((Atom (sprintf "\\%s." s, atom), p1), lambda_node lam)
   | e -> app_node e
 
 

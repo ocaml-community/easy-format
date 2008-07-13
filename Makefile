@@ -1,4 +1,4 @@
-VERSION = 0.9.0
+VERSION = 0.9.1
 export VERSION
 
 .PHONY: default all opt test doc soft-clean clean
@@ -32,7 +32,6 @@ easy_format_example.html: simple_example.out simple_example.ml
 	echo '*)' >> easy_format_example.ml
 	ocamlc -c -dtypes easy_format_example.ml
 	caml2html easy_format_example.ml -t -o easy_format_example.html
-
 
 soft-clean:
 	rm -f *.cm[iox] *.o *.annot \

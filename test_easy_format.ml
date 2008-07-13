@@ -2,42 +2,43 @@
 
 open Easy_format
 
-let make_data list_param label_param =
+let make_data list_param label_param atom_param =
   let obj_param = ("{", ",", "}", list_param) in
   let array_param = ("[", ",", "]", list_param) in
+  let at s = Atom (s, atom_param) in
   let obj =
     List (
       obj_param,
       [
 	Label (
-	  (Atom "x:", label_param), 
-	  Atom "y"
+	  (at "x:", label_param), 
+	  at "y"
 	);
 	Label (
-	  (Atom "y:", label_param), 
-	  List (obj_param, [Label ((Atom "z:", label_param), Atom "aaa")])
+	  (at "y:", label_param), 
+	  List (obj_param, [Label ((at "z:", label_param), at "aaa")])
 	);
 	Label (
-	(Atom "a:", label_param), 
+	(at "a:", label_param), 
 	  List (
 	    array_param,
 	    [ 
-	      Atom "abc"; 
-	      Atom "\"long long long......................................\
+	      at "abc"; 
+	      at "\"long long long......................................\
                     ....................................................\"";
 	    ]
 	  )
 	);
 	Label (
-	  (Atom "\"a long label ..................\
+	  (at "\"a long label ..................\
                    .............................\":",
 	   label_param),
 	  List (
 	    array_param,
 	    [
-	      Atom "123";
-	      Atom "456";
-	      Atom "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+	      at "123";
+	      at "456";
+	      at "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 	    ]
 	  )
 	)
@@ -46,23 +47,23 @@ let make_data list_param label_param =
   in
 
   let array = 
-    List (array_param, [ Atom "a"; Atom "b"; Atom "c"; Atom "d" ]) 
+    List (array_param, [ at "a"; at "b"; at "c"; at "d" ]) 
   in
   
   Label (
-    (Atom "abc:", label_param), 
+    (at "abc:", label_param), 
     List (
       array_param,
       [
 	obj; array; obj;
-	Atom "xyz";
+	at "xyz";
       ]
     )
   )
 
 
 let _ = 
-  let x1 = make_data list label in
+  let x1 = make_data list label atom in
   let x2 =
     make_data
       { list with 
@@ -72,7 +73,9 @@ let _ =
 	  stick_to_label = false;
 	  align_closing = false }
       { label with 
-	  space_after_label = true } in
+	  space_after_label = true }
+      atom
+  in
   let x3 =
     make_data
       { list with 
@@ -84,9 +87,11 @@ let _ =
 	  stick_to_label = true;
 	  align_closing = true }
       { label with 
-	  space_after_label = true } in
+	  space_after_label = true }
+      atom
+  in
   let x4 = 
-    make_data { list with stick_to_label = false } label
+    make_data { list with stick_to_label = false } label atom
   in
 
   Easy_format.Pretty.to_stdout x1;
