@@ -69,7 +69,7 @@ archive:
 	 	cp -r . /tmp/easy-format && \
 		cd /tmp/easy-format && \
 			$(MAKE) clean && \
-			rm -f *~ easy-format*.tar* && \
+			rm -f *~ examples/*~ easy-format*.tar* && \
 		cd /tmp && cp -r easy-format easy-format-$(VERSION) && \
 		tar czf easy-format.tar.gz easy-format && \
 		tar cjf easy-format.tar.bz2 easy-format && \
