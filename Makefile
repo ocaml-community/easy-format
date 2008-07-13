@@ -1,4 +1,4 @@
-VERSION = 0.9.1
+VERSION = 1.0.0
 export VERSION
 
 .PHONY: default all opt test doc soft-clean clean
@@ -40,7 +40,8 @@ soft-clean:
 
 clean: soft-clean
 	rm -f *.out ocamldoc/* \
-		easy_format_example.* 
+		easy_format_example.*
+	cd examples; $(MAKE) clean
 
 
 COMMON_INSTALL_FILES = META easy_format.cmi easy_format.mli
