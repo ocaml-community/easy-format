@@ -1,4 +1,4 @@
-VERSION = 1.0.0
+VERSION = 1.0.1
 export VERSION
 
 .PHONY: default all opt test doc soft-clean clean
