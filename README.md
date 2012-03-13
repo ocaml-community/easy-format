@@ -5,7 +5,7 @@ Easy-format: indentation made easy
 Documentation
 -------------
 
-The documentation is at http://martin.jambon.free.fr/easy-format.html
+The documentation is at http://mjambon.com/easy-format.html
 
 
 Installation
