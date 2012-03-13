@@ -13,7 +13,7 @@ Installation
 
 Installation requires ocamlfind.
 
-```bash
+```
 $ make
 $ make install
 ```
