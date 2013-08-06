@@ -61,27 +61,3 @@ install:
 
 uninstall:
 	ocamlfind remove easy-format
-
-archive:
-	@echo "Making archive for version $(VERSION)"
-	$(MAKE) doc
-	rm -rf /tmp/easy-format /tmp/easy-format-$(VERSION) && \
-	 	cp -r . /tmp/easy-format && \
-		cd /tmp/easy-format && \
-			$(MAKE) clean && \
-			rm -f *~ examples/*~ easy-format*.tar* && \
-		cd /tmp && cp -r easy-format easy-format-$(VERSION) && \
-		tar czf easy-format.tar.gz easy-format && \
-		tar cjf easy-format.tar.bz2 easy-format && \
-		tar czf easy-format-$(VERSION).tar.gz easy-format-$(VERSION) && \
-		tar cjf easy-format-$(VERSION).tar.bz2 easy-format-$(VERSION)
-	mv /tmp/easy-format.tar.gz /tmp/easy-format.tar.bz2 .
-	mv /tmp/easy-format-$(VERSION).tar.gz /tmp/easy-format-$(VERSION).tar.bz2 .
-	cp easy-format.tar.gz easy-format.tar.bz2 $$WWW/
-	cp easy-format-$(VERSION).tar.gz easy-format-$(VERSION).tar.bz2 $$WWW/
-	cp LICENSE $$WWW/easy-format-license.txt
-	cp Changes $$WWW/easy-format-changes.txt
-	cp easy_format_example.ml easy_format_example.html $$WWW/
-	cp ocamldoc/* $$WWW/easy-format-doc/
-	echo 'let easy_format_version = "$(VERSION)"' \
-		> $$WWW/easy-format-version.ml
