@@ -24,6 +24,7 @@ simple_example.out: simple_example
 
 doc: ocamldoc/index.html easy_format_example.html
 ocamldoc/index.html: easy_format.mli
+	mkdir -p ocamldoc
 	ocamldoc -d ocamldoc -html $<
 easy_format_example.html: simple_example.out simple_example.ml
 	cat simple_example.ml > easy_format_example.ml
