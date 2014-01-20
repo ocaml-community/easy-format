@@ -1,0 +1,15 @@
+*~
+*.cmi
+*.cmo
+*.cmx
+*.cma
+*.cmxa
+*.a
+*.o
+*.annot
+*.run
+*.opt
+*.exe
+META
+bytecode
+nativecode
