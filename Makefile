@@ -1,7 +1,8 @@
 VERSION = 1.0.2
 export VERSION
 
-NATDYNLINK := $(shell if [ -f `ocamlfind ocamlc -where`/dynlink.cmxa ]; then echo YES; else echo NO; fi)
+NATDYNLINK := $(shell if [ -f `ocamlfind ocamlc -where`/dynlink.cmxa ]; \
+                      then echo YES; else echo NO; fi)
 
 ifeq "${NATDYNLINK}" "YES"
 CMXS=easy_format.cmxs
@@ -22,16 +23,20 @@ easy_format.cmx:
 	ocamlfind ocamlopt -c -dtypes easy_format.ml
 
 easy_format.cmxs: easy_format.cmx
-	ocamlfind ocamlopt -I . -shared -linkall -o easy_format.cmxs easy_format.cmx
+	ocamlfind ocamlopt -I . -shared -linkall \
+	  -o easy_format.cmxs easy_format.cmx
 
 test: all simple_example.out
-	ocamlfind ocamlc -o test_easy_format -dtypes easy_format.cmo test_easy_format.ml
+	ocamlfind ocamlc -o test_easy_format -dtypes \
+	  easy_format.cmo test_easy_format.ml
 	./test_easy_format > test_easy_format.out
-	ocamlfind ocamlc -o lambda_example -dtypes easy_format.cmo lambda_example.ml
+	ocamlfind ocamlc -o lambda_example -dtypes \
+	  easy_format.cmo lambda_example.ml
 	./lambda_example > lambda_example.out
 
 simple_example: all simple_example.ml
-	ocamlfind ocamlc -o simple_example -dtypes easy_format.cmo simple_example.ml
+	ocamlfind ocamlc -o simple_example -dtypes \
+	  easy_format.cmo simple_example.ml
 simple_example.out: simple_example
 	./simple_example > simple_example.out
 
