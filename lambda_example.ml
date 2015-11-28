@@ -5,7 +5,7 @@ type lambda =
 
 
 (* We make the page more narrow for illustration purposes *)
-let _ = Format.set_margin 20
+let () = Format.set_margin 20
 
 
 
@@ -20,13 +20,13 @@ let sample_data =
        (Lambda (
 	  "x",
 	  Apply (
-	    Apply ( 
+	    Apply (
 	      Apply (
-		Var "n", 
+		Var "n",
 		(Lambda (
-		   "g", 
+		   "g",
 		   (Lambda (
-		      "h", 
+		      "h",
 		      Apply (Var "h", Apply (Var "g", Var "f"))
 		    )
 		   )
@@ -42,7 +42,7 @@ let sample_data =
      )
     )
   )
-    
+
 
 (****************************************************************************)
 (* Example from http://caml.inria.fr/resources/doc/guides/format.html
@@ -71,12 +71,12 @@ and pr_lambda ppf = function
  | e -> pr_app ppf e;;
 
 let print_lambda x =
-  pr_lambda std_formatter x; 
+  pr_lambda std_formatter x;
   pp_print_flush std_formatter ()
 
 
-let _ = 
-  print_endline 
+let () =
+  print_endline
     "Example from \
      http://caml.inria.fr/resources/doc/guides/format.html#example";
   print_lambda sample_data;
@@ -94,7 +94,7 @@ open Easy_format
 let p1 = { label with indent_after_label = 1 }
 let p2 = { label with indent_after_label = 2 }
 
-let paren_style = 
+let paren_style =
   { list with
       space_after_opening = false;
       space_before_closing = false;
@@ -108,15 +108,14 @@ let rec exp0_node = function
 and app_node = function
     Apply (f, arg) -> Label ((app_node f, p2), exp0_node arg)
   | f -> exp0_node f
-      
+
 and lambda_node = function
     Lambda (s, lam) ->
       Label ((Atom (sprintf "\\%s." s, atom), p1), lambda_node lam)
   | e -> app_node e
 
 
-let _ =
+let () =
   print_endline "Same, using Easy_format:";
   Pretty.to_stdout (lambda_node sample_data);
   print_newline ()
-

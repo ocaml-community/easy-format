@@ -1,5 +1,3 @@
-(* $Id$ *)
-
 (**
    Easy_format: indentation made easy.
 *)
@@ -15,7 +13,7 @@
 
   Atoms represent any text that is guaranteed to be printed as-is.
   Lists can model any sequence of items such as arrays of data
-  or lists of definitions that are labelled with something 
+  or lists of definitions that are labelled with something
   like "int main", "let x =" or "x:".
 *)
 
@@ -28,12 +26,12 @@ type wrap =
 (** List wrapping conditions:
     - [`Wrap_atoms]: wrap if the list contains only atoms
     - [`Always_wrap]: always wrap when needed
-    - [`Never_wrap]: never wrap, 
+    - [`Never_wrap]: never wrap,
       i.e. the list is either horizontal or vertical
-    - [`Force_breaks]: align vertically, 
-      i.e. always break line between list items and 
+    - [`Force_breaks]: align vertically,
+      i.e. always break line between list items and
       align the left edge of each item.
-    - [`No_breaks]: align horizontally, 
+    - [`No_breaks]: align horizontally,
       i.e. never break line between list items
 *)
 
@@ -54,13 +52,13 @@ type atom_param = {
 val atom : atom_param
 
 
-(** List-formatting parameters. 
-    Always derive a new set of parameters from an existing record. 
+(** List-formatting parameters.
+    Always derive a new set of parameters from an existing record.
     See {!Easy_format.list}.
 *)
 type list_param = {
   space_after_opening : bool; (** Whether there must be some whitespace
-				  after the opening string. 
+				  after the opening string.
 				  Default: [true] *)
   space_after_separator : bool; (** Whether there must be some whitespace
 				    after the item separators.
@@ -77,7 +75,7 @@ type list_param = {
   stick_to_label : bool; (** Whether the opening string should be fused
 			     with the preceding label.
 			     Default: [true] *)
-  align_closing : bool; (** Whether the beginning of the 
+  align_closing : bool; (** Whether the beginning of the
 			    closing string must be aligned
 			    with the beginning of the opening string
 			    (stick_to_label = false) or
@@ -98,7 +96,7 @@ type list_param = {
   closing_style : style_name option; (** Default: [None] *)
 }
 
-val list : list_param 
+val list : list_param
   (** Default list-formatting parameters, using the default values
       described in the type definition above.
 
@@ -109,13 +107,13 @@ val list : list_param
       and work as before.
   *)
 
-(** Label-formatting parameters. 
-    Always derive a new set of parameters from an existing record. 
+(** Label-formatting parameters.
+    Always derive a new set of parameters from an existing record.
     See {!Easy_format.label}.
 *)
 type label_param = {
   space_after_label : bool; (** Whether there must be some whitespace
-				after the label. 
+				after the label.
 				Default: [true] *)
   indent_after_label : int; (** Extra indentation before the item
 				that comes after a label.
@@ -127,7 +125,7 @@ type label_param = {
 val label : label_param
   (** Default label-formatting parameters, using the default values
       described in the type definition above.
-      
+
       In order to make code compatible with future versions of the library,
       the record inheritance syntax should be used, e.g.
       [ { label with indent_after_label = 0 } ].
@@ -141,17 +139,17 @@ type t =
     Atom of string * atom_param (** Plain string normally
 				    without line breaks. *)
 
-  | List of 
+  | List of
       (
 	string    (* opening *)
 	* string  (* separator *)
 	* string  (* closing *)
 	* list_param
-      ) 
-      * t list   
+      )
+      * t list
 	(** [List ((opening, separator, closing, param), nodes)] *)
 
-  | Label of (t * label_param) * t 
+  | Label of (t * label_param) * t
       (** [Label ((label, param), node)]: labelled node. *)
 
   | Custom of (Format.formatter -> unit)
@@ -160,10 +158,10 @@ type t =
 	  for leaving the formatter in a clean state. *)
 (** The type of the tree to be pretty-printed. Each node contains
     its own formatting parameters.
-    
-    Detail of a list node 
+
+    Detail of a list node
     [List ((opening, separator, closing, param), nodes)]:
-    
+
     - [opening]: opening string such as ["\{"] ["\["] ["("] ["begin"] [""] etc.
     - [separator]: node separator such as [";"] [","] [""] ["+"] ["|"] etc.
     - [closing]: closing string such as ["\}"] ["\]"] [")"] ["end"] [""] etc.
@@ -171,9 +169,9 @@ type t =
 
 *)
 
-type escape = 
-    [ `None 
-    | `Escape of 
+type escape =
+    [ `None
+    | `Escape of
 	((string -> int -> int -> unit) -> string -> int -> int -> unit)
     | `Escape_string of (string -> string) ]
 
@@ -218,7 +216,7 @@ sig
 
   val list_false : list_param
     (** Deprecated. All boolean fields set to false. indent_body = 2. *)
-    
+
   val label_false : label_param
     (** Deprecated. All boolean fields set to false. indent_after_label = 2. *)
 end

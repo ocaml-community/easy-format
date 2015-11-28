@@ -1,5 +1,3 @@
-(* $Id$ *)
-
 open Format
 
 type wrap =
@@ -8,7 +6,6 @@ type wrap =
     | `Never_wrap
     | `Force_breaks
     | `No_breaks ]
-
 
 type style_name = string
 type style = {
@@ -79,9 +76,9 @@ type t =
   | Custom of (formatter -> unit)
 
 
-type escape = 
-    [ `None 
-    | `Escape of 
+type escape =
+    [ `None
+    | `Escape of
 	((string -> int -> int -> unit) -> string -> int -> int -> unit)
     | `Escape_string of (string -> string) ]
 
@@ -95,25 +92,25 @@ struct
   (*
     Relies on the fact that mark_open_tag and mark_close_tag
     are called exactly once before calling pp_output_string once.
-    It's a reasonable assumption although not guaranteed by the 
+    It's a reasonable assumption although not guaranteed by the
     documentation of the Format module.
   *)
-  let set_escape fmt escape = 
+  let set_escape fmt escape =
     let print0, flush0 = pp_get_formatter_output_functions fmt () in
     let tagf0 = pp_get_formatter_tag_functions fmt () in
-    
+
     let is_tag = ref false in
-    
+
     let mot tag =
       is_tag := true;
       tagf0.mark_open_tag tag
     in
-    
+
     let mct tag =
       is_tag := true;
       tagf0.mark_close_tag tag
     in
-    
+
     let print s p n =
       if !is_tag then
 	(print0 s p n;
@@ -121,7 +118,7 @@ struct
       else
 	escape print0 s p n
     in
-    
+
     let tagf = {
       tagf0 with
 	mark_open_tag = mot;
@@ -130,7 +127,7 @@ struct
     in
     pp_set_formatter_output_functions fmt print flush0;
     pp_set_formatter_tag_functions fmt tagf
-      
+
 
   let set_escape_string fmt esc =
     let escape print s p n =
@@ -205,7 +202,7 @@ struct
     match p.wrap_body with
 	`Always_wrap -> pp_open_hovbox fmt indent
       | `Never_wrap -> pp_open_hvbox fmt indent
-      | `Wrap_atoms -> 
+      | `Wrap_atoms ->
 	  if List.for_all (function Atom _ -> true | _ -> false) l then
 	    pp_open_hovbox fmt indent
 	  else
@@ -231,7 +228,7 @@ struct
 	  pp_close_tag fmt ()
 
   let rec fprint_t fmt = function
-      Atom (s, p) -> 
+      Atom (s, p) ->
 	tag_string fmt p.atom_style s;
 
     | List ((_, _, _, p) as param, l) ->
@@ -288,7 +285,7 @@ struct
 
   (* Either horizontal or vertical list *)
   and fprint_list fmt label ((op, sep, cl, p) as param) = function
-      [] -> 
+      [] ->
 	fprint_opt_label fmt label;
 	tag_string fmt p.opening_style op;
 	if p.space_after_opening || p.space_before_closing then
@@ -309,17 +306,17 @@ struct
     fprint_opt_label fmt label;
 
     tag_string fmt p.opening_style op;
-    
-    if p.space_after_opening then 
+
+    if p.space_after_opening then
       pp_print_space fmt ()
     else
       pp_print_cut fmt ();
-    
+
     let open_extra, close_extra = extra_box p l in
     open_extra fmt;
     fprint_list_body_stick_left fmt p sep hd tl;
     close_extra fmt;
-    
+
     if p.space_before_closing then
       pp_print_break fmt 1 (-indent)
     else
@@ -329,17 +326,17 @@ struct
 
   and fprint_list_stick_right fmt label (op, sep, cl, p) hd tl l =
     let base_indent = p.indent_body in
-    let sep_indent = 
+    let sep_indent =
       String.length sep + (if p.space_after_separator then 1 else 0)
     in
     let indent = base_indent + sep_indent in
-    
+
     pp_open_xbox fmt p indent;
     fprint_opt_label fmt label;
 
     tag_string fmt p.opening_style op;
 
-    if p.space_after_opening then 
+    if p.space_after_opening then
       pp_print_space fmt ()
     else
       pp_print_cut fmt ();
@@ -373,7 +370,7 @@ struct
 
   (* align_closing = false *)
   and fprint_list2 fmt (op, sep, cl, p) = function
-      [] -> 
+      [] ->
 	tag_string fmt p.opening_style op;
 	if p.space_after_opening || p.space_before_closing then
 	  pp_print_string fmt " ";
@@ -397,17 +394,17 @@ struct
 
 
   (* Printing a label:value pair.
-     
+
      The opening bracket stays on the same line as the key, no matter what,
      and the closing bracket is either on the same line
-     or vertically aligned with the beginning of the key. 
+     or vertically aligned with the beginning of the key.
   *)
   and fprint_pair fmt ((lab, lp) as label) x =
     match x with
-	List ((op, sep, cl, p), l) when p.stick_to_label && p.align_closing -> 
+	List ((op, sep, cl, p), l) when p.stick_to_label && p.align_closing ->
 	  fprint_list fmt (Some label) (op, sep, cl, p) l
 
-      | _ -> 
+      | _ ->
 	  let indent = lp.indent_after_label in
 	  pp_open_hvbox fmt 0;
 
@@ -425,22 +422,22 @@ struct
   let to_formatter fmt x =
     fprint_t fmt x;
     pp_print_flush fmt ()
-      
+
   let to_buffer ?(escape = `None) ?(styles = []) buf x =
     let fmt = Format.formatter_of_buffer buf in
     define_styles fmt escape styles;
     to_formatter fmt x
-      
+
   let to_string ?escape ?styles x =
     let buf = Buffer.create 500 in
     to_buffer ?escape ?styles buf x;
     Buffer.contents buf
-      
+
   let to_channel ?(escape = `None) ?(styles = []) oc x =
     let fmt = formatter_of_out_channel oc in
     define_styles fmt escape styles;
     to_formatter fmt x
-      
+
   let to_stdout ?escape ?styles x = to_channel ?escape ?styles stdout x
   let to_stderr ?escape ?styles x = to_channel ?escape ?styles stderr x
 
@@ -452,12 +449,12 @@ end
 module Compact =
 struct
   open Printf
-  
+
   let rec fprint_t buf = function
       Atom (s, _) -> Buffer.add_string buf s
     | List (param, l) -> fprint_list buf param l
     | Label (label, x) -> fprint_pair buf label x
-    | Custom f -> 
+    | Custom f ->
 	(* Will most likely not be compact *)
 	let fmt = formatter_of_buffer buf in
 	f fmt;
@@ -540,13 +537,13 @@ struct
     separator_style = None;
     closing_style = None;
   }
-    
+
   let label_true = {
     space_after_label = true;
     indent_after_label = 2;
     label_style = None;
   }
-    
+
   let label_false = {
     space_after_label = false;
     indent_after_label = 2;

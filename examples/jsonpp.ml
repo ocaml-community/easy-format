@@ -1,8 +1,6 @@
 #! /usr/bin/env ocamlscript
 Ocaml.packs := ["json-wheel"; "easy-format"]
 --
-(* $Id$ *)
-
 open Json_type
 open Easy_format
 
@@ -20,7 +18,7 @@ let jstring_of_float f =
 let escape_json_string buf s =
   for i = 0 to String.length s - 1 do
     let c = String.unsafe_get s i in
-    match c with 
+    match c with
       | '"'    -> Buffer.add_string buf "\\\""
       | '\t'   -> Buffer.add_string buf "\\t"
       | '\r'   -> Buffer.add_string buf "\\r"
@@ -28,12 +26,12 @@ let escape_json_string buf s =
       | '\n'   -> Buffer.add_string buf "\\n"
       | '\012' -> Buffer.add_string buf "\\f"
       | '\\'   -> Buffer.add_string buf "\\\\"
-   (* | '/'    -> "\\/" *) (* Forward slash can be escaped 
+   (* | '/'    -> "\\/" *) (* Forward slash can be escaped
                               but doesn't have to *)
       | '\x00'..'\x1F' (* Control characters that must be escaped *)
-      | '\x7F' (* DEL *) -> 
+      | '\x7F' (* DEL *) ->
           Printf.bprintf buf "\\u%04X" (int_of_char c)
-      | _      -> 
+      | _      ->
           (* Don't bother detecting or escaping multibyte chars *)
           Buffer.add_char buf c
   done
@@ -55,8 +53,8 @@ let string = { atom_style = Some "string" }
 let label_string = { atom_style = Some "label" }
 let colon = { atom_style = Some "punct" }
 
-let array = 
-  { list with 
+let array =
+  { list with
       opening_style = Some "punct";
       separator_style = Some "punct";
       closing_style = Some "punct" }
@@ -78,8 +76,8 @@ let rec format = function
   | Object l -> List (("{", ",", "}", array), List.map format_field l)
 
 and format_field (s, x) =
-  let lab = 
-    List (("", "", "", label_with_colon), 
+  let lab =
+    List (("", "", "", label_with_colon),
 	  [ Atom (jstring_of_string s, label_string);
 	    Atom (":", colon) ])
   in
@@ -148,7 +146,7 @@ body,code,pre { color:black;background-color:white }
 </html>
 "
 
-let _ =
+let () =
   let options = [] in
   let files = ref [] in
   let anon_fun s = files := s :: !files in

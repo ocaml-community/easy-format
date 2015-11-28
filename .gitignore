@@ -4,6 +4,7 @@
 *.cmx
 *.cma
 *.cmxa
+*.cmxs
 *.a
 *.o
 *.annot
@@ -13,3 +14,8 @@
 META
 bytecode
 nativecode
+*.out
+lambda_example
+simple_example
+test_easy_format
+

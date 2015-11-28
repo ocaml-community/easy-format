@@ -1,5 +1,3 @@
-(* $Id$ *)
-
 open Easy_format
 
 let make_data list_param label_param atom_param =
@@ -11,19 +9,19 @@ let make_data list_param label_param atom_param =
       obj_param,
       [
 	Label (
-	  (at "x:", label_param), 
+	  (at "x:", label_param),
 	  at "y"
 	);
 	Label (
-	  (at "y:", label_param), 
+	  (at "y:", label_param),
 	  List (obj_param, [Label ((at "z:", label_param), at "aaa")])
 	);
 	Label (
-	(at "a:", label_param), 
+	(at "a:", label_param),
 	  List (
 	    array_param,
-	    [ 
-	      at "abc"; 
+	    [
+	      at "abc";
 	      at "\"long long long......................................\
                     ....................................................\"";
 	    ]
@@ -46,12 +44,12 @@ let make_data list_param label_param atom_param =
     )
   in
 
-  let array = 
-    List (array_param, [ at "a"; at "b"; at "c"; at "d" ]) 
+  let array =
+    List (array_param, [ at "a"; at "b"; at "c"; at "d" ])
   in
-  
+
   Label (
-    (at "abc:", label_param), 
+    (at "abc:", label_param),
     List (
       array_param,
       [
@@ -62,23 +60,23 @@ let make_data list_param label_param atom_param =
   )
 
 
-let _ = 
+let () =
   let x1 = make_data list label atom in
   let x2 =
     make_data
-      { list with 
+      { list with
 	  space_after_opening = false;
 	  space_after_separator = false;
 	  space_before_closing = false;
 	  stick_to_label = false;
 	  align_closing = false }
-      { label with 
+      { label with
 	  space_after_label = true }
       atom
   in
   let x3 =
     make_data
-      { list with 
+      { list with
 	  space_after_opening = false;
 	  space_before_separator = true;
 	  space_after_separator = true;
@@ -86,11 +84,11 @@ let _ =
 	  space_before_closing = false;
 	  stick_to_label = true;
 	  align_closing = true }
-      { label with 
+      { label with
 	  space_after_label = true }
       atom
   in
-  let x4 = 
+  let x4 =
     make_data { list with stick_to_label = false } label atom
   in
 
