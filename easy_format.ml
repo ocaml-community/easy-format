@@ -5,6 +5,7 @@ type wrap =
     | `Always_wrap
     | `Never_wrap
     | `Force_breaks
+    | `Force_breaks_rec
     | `No_breaks ]
 
 type style_name = string
@@ -55,7 +56,6 @@ let list = {
   closing_style = None;
 }
 
-
 type label_param = {
   space_after_label : bool;
   indent_after_label : int;
@@ -68,13 +68,11 @@ let label = {
   label_style = None;
 }
 
-
 type t =
     Atom of string * atom_param
   | List of (string * string * string * list_param) * t list
   | Label of (t * label_param) * t
   | Custom of (formatter -> unit)
-
 
 type escape =
     [ `None
@@ -84,10 +82,88 @@ type escape =
 
 type styles = (style_name * style) list
 
+(*
+   Transform a tree starting from the leaves, propagating and merging
+   accumulators until reaching the root.
+*)
+let propagate_from_leaf_to_root
+  ~init_acc  (* create initial accumulator for a leaf *)
+  ~merge_acc (* merge two accumulators coming from child nodes *)
+  ~map_node  (* (node, acc) -> (node, acc) *)
+  x =
 
+  let rec aux x =
+    match x with
+    | Atom _ ->
+        let acc = init_acc x in
+        map_node x acc
+    | List (param, children) ->
+        let new_children, accs = List.split (List.map aux children) in
+        let acc = List.fold_left merge_acc (init_acc x) accs in
+        map_node (List (param, new_children)) acc
+    | Label ((x1, param), x2) ->
+        let acc0 = init_acc x in
+        let new_x1, acc1 = aux x1 in
+        let new_x2, acc2 = aux x2 in
+        let acc = merge_acc (merge_acc acc0 acc1) acc2 in
+        map_node (Label ((new_x1, param), new_x2)) acc
+    | Custom _ ->
+        let acc = init_acc x in
+        map_node x acc
+  in
+  aux x
+
+(*
+   Convert wrappable lists into vertical lists if any of their descendants
+   has the attribute wrap_body = `Force_breaks_rec.
+*)
+let propagate_forced_breaks x =
+  (* acc = whether to force breaks in wrappable lists *)
+  let init_acc = function
+    | Atom _
+    | Label _
+    | Custom _ -> false
+    | List ((_, _, _, { wrap_body = `Force_breaks_rec }), _) -> true
+    | List _ -> false
+  in
+  let merge_acc force_breaks1 force_breaks2 =
+    force_breaks1 || force_breaks2
+  in
+  let map_node x force_breaks =
+    match x with
+    | List ((_, _, _, { wrap_body = `Force_breaks_rec }), _) -> x, true
+    | List ((_, _, _, { wrap_body = `Force_breaks }), _) -> x, force_breaks
+
+    | List ((op, sep, cl, ({ wrap_body = (`Wrap_atoms
+                                         | `Always_wrap) } as p)),
+            children) ->
+        if force_breaks then
+          let p = { p with wrap_body = `Force_breaks } in
+          List ((op, sep, cl, p), children), true
+        else
+          x, false
+
+    | List ((_, _, _, { wrap_body = (`Never_wrap | `No_breaks) }), _)
+    | Atom _
+    | Label _
+    | Custom _ -> x, force_breaks
+  in
+  let new_x, forced_breaks =
+    propagate_from_leaf_to_root
+      ~init_acc
+      ~merge_acc
+      ~map_node
+      x
+  in
+  new_x
 
 module Pretty =
 struct
+  (*
+     Rewrite the tree to be printed.
+     Currently, this is used only to handle `Force_breaks_rec.
+  *)
+  let rewrite x = propagate_forced_breaks x
 
   (*
     Relies on the fact that mark_open_tag and mark_close_tag
@@ -174,10 +250,11 @@ struct
 
   let pp_open_xbox fmt p indent =
     match p.wrap_body with
-        `Always_wrap
+	`Always_wrap
       | `Never_wrap
       | `Wrap_atoms -> pp_open_hvbox fmt indent
-      | `Force_breaks -> pp_open_vbox fmt indent
+      | `Force_breaks
+      | `Force_breaks_rec -> pp_open_vbox fmt indent
       | `No_breaks -> pp_open_hbox fmt ()
 
   let extra_box p l =
@@ -186,6 +263,7 @@ struct
           `Always_wrap -> true
         | `Never_wrap
         | `Force_breaks
+        | `Force_breaks_rec
         | `No_breaks -> false
         | `Wrap_atoms ->
             List.for_all (function Atom _ -> true | _ -> false) l
@@ -207,7 +285,8 @@ struct
             pp_open_hovbox fmt indent
           else
             pp_open_hvbox fmt indent
-      | `Force_breaks -> pp_open_vbox fmt indent
+      | `Force_breaks
+      | `Force_breaks_rec -> pp_open_vbox fmt indent
       | `No_breaks -> pp_open_hbox fmt ()
 
 
@@ -420,6 +499,7 @@ struct
           pp_close_box fmt ()
 
   let to_formatter fmt x =
+    let x = rewrite x in
     fprint_t fmt x;
     pp_print_flush fmt ()
 

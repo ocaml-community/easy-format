@@ -122,6 +122,27 @@ let format_function_definition (body_label, body_param) name param body =
     List (body_param, List.map (fun s -> Atom (s, atom)) body)
   )
 
+(*
+   Illustrate the difference between `Force_break and `Force_breaks_rec
+*)
+let make_heterogenous_list wrap =
+  List (
+    ("[", ",", "]", { list with wrap_body = `Always_wrap }),
+    [
+      Atom ("0", atom);
+      List (
+        ("[", ",", "]", { list with wrap_body = wrap }),
+        [
+          Atom ("1.23456", atom);
+          Atom ("9.87654", atom);
+        ]
+      );
+      Atom ("1", atom);
+      Atom ("2", atom);
+      Atom ("3", atom);
+    ]
+  )
+
 let print_margin fmt () =
   let margin = Format.pp_get_margin fmt () in
   for i = 1 to margin do
@@ -146,6 +167,9 @@ let print s =
 let print_tuple fmt l =
   Pretty.to_formatter fmt (format_tuple format_int l)
 
+let print_heterogenous_list fmt wrap =
+  Pretty.to_formatter fmt (make_heterogenous_list wrap)
+
 let print_sum ?wrap fmt l =
   Pretty.to_formatter fmt (format_sum ?wrap l)
 
@@ -169,7 +193,14 @@ let () =
   with_margin 20 (print_sum ~wrap:`Always_wrap) ints;
   with_margin 20 (print_sum ~wrap:`Never_wrap) ints;
 
+  (* Heterogenous list *)
+  print "wrappable outer list, inner list using `Force_breaks";
+  with_margin 80 print_heterogenous_list `Force_breaks;
+  with_margin 20 print_heterogenous_list `Force_breaks;
 
+  print "wrappable outer list, inner list using `Force_breaks_rec";
+  with_margin 80 print_heterogenous_list `Force_breaks_rec;
+  with_margin 20 print_heterogenous_list `Force_breaks_rec;
 
   (* Triangular array of arrays showing wrapping of lists of atoms *)
   let m = Array.init 20 (fun i -> Array.init i (fun i -> sqrt (float i))) in

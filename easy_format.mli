@@ -22,6 +22,7 @@ type wrap =
     | `Always_wrap
     | `Never_wrap
     | `Force_breaks
+    | `Force_breaks_rec
     | `No_breaks ]
 (** List wrapping conditions:
     - [`Wrap_atoms]: wrap if the list contains only atoms
@@ -31,6 +32,9 @@ type wrap =
     - [`Force_breaks]: align vertically,
       i.e. always break line between list items and
       align the left edge of each item.
+    - [`Force_breaks_rec]: same as [`Force_breaks] but turns
+      any wrappable ancestor node's wrap property ([`Wrap_atoms]
+      or [`Always_wrap]) into [`Force_breaks].
     - [`No_breaks]: align horizontally,
       i.e. never break line between list items
 *)
@@ -85,7 +89,7 @@ type list_param = {
   wrap_body : wrap; (** Defines under which conditions the list body
 			may be wrapped, i.e. allow several lines
 			and several list items per line.
-			Default: [`Wrap_atom_list] *)
+			Default: [`Wrap_atoms] *)
   indent_body : int; (** Extra indentation of the list body.
 			 Default: [2] *)
 
