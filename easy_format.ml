@@ -79,7 +79,7 @@ type t =
 type escape =
     [ `None
     | `Escape of
-	((string -> int -> int -> unit) -> string -> int -> int -> unit)
+        ((string -> int -> int -> unit) -> string -> int -> int -> unit)
     | `Escape_string of (string -> string) ]
 
 type styles = (style_name * style) list
@@ -113,16 +113,16 @@ struct
 
     let print s p n =
       if !is_tag then
-	(print0 s p n;
-	 is_tag := false)
+        (print0 s p n;
+         is_tag := false)
       else
-	escape print0 s p n
+        escape print0 s p n
     in
 
     let tagf = {
       tagf0 with
-	mark_open_tag = mot;
-	mark_close_tag = mct
+        mark_open_tag = mot;
+        mark_close_tag = mct
     }
     in
     pp_set_formatter_output_functions fmt print flush0;
@@ -144,37 +144,37 @@ struct
       let tbl1 = Hashtbl.create (2 * List.length l) in
       let tbl2 = Hashtbl.create (2 * List.length l) in
       List.iter (
-	fun (style_name, style) ->
-	  Hashtbl.add tbl1 style_name style.tag_open;
-	  Hashtbl.add tbl2 style_name style.tag_close
+        fun (style_name, style) ->
+          Hashtbl.add tbl1 style_name style.tag_open;
+          Hashtbl.add tbl2 style_name style.tag_close
       ) l;
       let mark_open_tag style_name =
-	try Hashtbl.find tbl1 style_name
-	with Not_found -> ""
+        try Hashtbl.find tbl1 style_name
+        with Not_found -> ""
       in
       let mark_close_tag style_name =
-	try Hashtbl.find tbl2 style_name
-	with Not_found -> ""
+        try Hashtbl.find tbl2 style_name
+        with Not_found -> ""
       in
 
       let tagf = {
-	(pp_get_formatter_tag_functions fmt ()) with
-	  mark_open_tag = mark_open_tag;
-	  mark_close_tag = mark_close_tag
+        (pp_get_formatter_tag_functions fmt ()) with
+          mark_open_tag = mark_open_tag;
+          mark_close_tag = mark_close_tag
       }
       in
       pp_set_formatter_tag_functions fmt tagf
     );
 
     (match escape with
-	 `None -> ()
+         `None -> ()
        | `Escape esc -> set_escape fmt esc
        | `Escape_string esc -> set_escape_string fmt esc)
 
 
   let pp_open_xbox fmt p indent =
     match p.wrap_body with
-	`Always_wrap
+        `Always_wrap
       | `Never_wrap
       | `Wrap_atoms -> pp_open_hvbox fmt indent
       | `Force_breaks -> pp_open_vbox fmt indent
@@ -183,12 +183,12 @@ struct
   let extra_box p l =
     let wrap =
       match p.wrap_body with
-	  `Always_wrap -> true
-	| `Never_wrap
-	| `Force_breaks
-	| `No_breaks -> false
-	| `Wrap_atoms ->
-	    List.for_all (function Atom _ -> true | _ -> false) l
+          `Always_wrap -> true
+        | `Never_wrap
+        | `Force_breaks
+        | `No_breaks -> false
+        | `Wrap_atoms ->
+            List.for_all (function Atom _ -> true | _ -> false) l
     in
     if wrap then
       ((fun fmt -> pp_open_hovbox fmt 0),
@@ -200,13 +200,13 @@ struct
 
   let pp_open_nonaligned_box fmt p indent l =
     match p.wrap_body with
-	`Always_wrap -> pp_open_hovbox fmt indent
+        `Always_wrap -> pp_open_hovbox fmt indent
       | `Never_wrap -> pp_open_hvbox fmt indent
       | `Wrap_atoms ->
-	  if List.for_all (function Atom _ -> true | _ -> false) l then
-	    pp_open_hovbox fmt indent
-	  else
-	    pp_open_hvbox fmt indent
+          if List.for_all (function Atom _ -> true | _ -> false) l then
+            pp_open_hovbox fmt indent
+          else
+            pp_open_hvbox fmt indent
       | `Force_breaks -> pp_open_vbox fmt indent
       | `No_breaks -> pp_open_hbox fmt ()
 
@@ -221,23 +221,23 @@ struct
 
   let tag_string fmt o s =
     match o with
-	None -> pp_print_string fmt s
+        None -> pp_print_string fmt s
       | Some tag ->
-	  pp_open_tag fmt tag;
-	  pp_print_string fmt s;
-	  pp_close_tag fmt ()
+          pp_open_tag fmt tag;
+          pp_print_string fmt s;
+          pp_close_tag fmt ()
 
   let rec fprint_t fmt = function
       Atom (s, p) ->
-	tag_string fmt p.atom_style s;
+        tag_string fmt p.atom_style s;
 
     | List ((_, _, _, p) as param, l) ->
-	open_tag fmt p.list_style;
-	if p.align_closing then
-	  fprint_list fmt None param l
-	else
-	  fprint_list2 fmt param l;
-	close_tag fmt p.list_style
+        open_tag fmt p.list_style;
+        if p.align_closing then
+          fprint_list fmt None param l
+        else
+          fprint_list2 fmt param l;
+        close_tag fmt p.list_style
 
     | Label (label, x) -> fprint_pair fmt label x
     | Custom f -> f fmt
@@ -247,14 +247,14 @@ struct
     fprint_t fmt hd;
     List.iter (
       fun x ->
-	if p.space_before_separator then
-	  pp_print_string fmt " ";
-	tag_string fmt p.separator_style sep;
-	if p.space_after_separator then
-	  pp_print_space fmt ()
-	else
-	  pp_print_cut fmt ();
-	fprint_t fmt x
+        if p.space_before_separator then
+          pp_print_string fmt " ";
+        tag_string fmt p.separator_style sep;
+        if p.space_after_separator then
+          pp_print_space fmt ()
+        else
+          pp_print_cut fmt ();
+        fprint_t fmt x
     ) tl;
     close_tag fmt p.body_style
 
@@ -263,41 +263,41 @@ struct
     fprint_t fmt hd;
     List.iter (
       fun x ->
-	if p.space_before_separator then
-	  pp_print_space fmt ()
-	else
-	  pp_print_cut fmt ();
-	tag_string fmt p.separator_style sep;
-	if p.space_after_separator then
-	  pp_print_string fmt " ";
-	fprint_t fmt x
+        if p.space_before_separator then
+          pp_print_space fmt ()
+        else
+          pp_print_cut fmt ();
+        tag_string fmt p.separator_style sep;
+        if p.space_after_separator then
+          pp_print_string fmt " ";
+        fprint_t fmt x
     ) tl;
     close_tag fmt p.body_style
 
   and fprint_opt_label fmt = function
       None -> ()
     | Some (lab, lp) ->
-	open_tag fmt lp.label_style;
-	fprint_t fmt lab;
-	close_tag fmt lp.label_style;
-	if lp.space_after_label then
-	  pp_print_string fmt " "
+        open_tag fmt lp.label_style;
+        fprint_t fmt lab;
+        close_tag fmt lp.label_style;
+        if lp.space_after_label then
+          pp_print_string fmt " "
 
   (* Either horizontal or vertical list *)
   and fprint_list fmt label ((op, sep, cl, p) as param) = function
       [] ->
-	fprint_opt_label fmt label;
-	tag_string fmt p.opening_style op;
-	if p.space_after_opening || p.space_before_closing then
-	  pp_print_string fmt " ";
-	tag_string fmt p.closing_style cl
-	
+        fprint_opt_label fmt label;
+        tag_string fmt p.opening_style op;
+        if p.space_after_opening || p.space_before_closing then
+          pp_print_string fmt " ";
+        tag_string fmt p.closing_style cl
+
     | hd :: tl as l ->
 
-	if tl = [] || p.separators_stick_left then
-	  fprint_list_stick_left fmt label param hd tl l
-	else
-	  fprint_list_stick_right fmt label param hd tl l
+        if tl = [] || p.separators_stick_left then
+          fprint_list_stick_left fmt label param hd tl l
+        else
+          fprint_list_stick_right fmt label param hd tl l
 
 
   and fprint_list_stick_left fmt label (op, sep, cl, p) hd tl l =
@@ -347,14 +347,14 @@ struct
     fprint_t fmt hd;
     List.iter (
       fun x ->
-	if p.space_before_separator then
-	  pp_print_break fmt 1 (-sep_indent)
-	else
-	  pp_print_break fmt 0 (-sep_indent);
-	tag_string fmt p.separator_style sep;
-	if p.space_after_separator then
-	  pp_print_string fmt " ";
-	fprint_t fmt x
+        if p.space_before_separator then
+          pp_print_break fmt 1 (-sep_indent)
+        else
+          pp_print_break fmt 0 (-sep_indent);
+        tag_string fmt p.separator_style sep;
+        if p.space_after_separator then
+          pp_print_string fmt " ";
+        fprint_t fmt x
     ) tl;
 
     close_extra fmt;
@@ -371,26 +371,26 @@ struct
   (* align_closing = false *)
   and fprint_list2 fmt (op, sep, cl, p) = function
       [] ->
-	tag_string fmt p.opening_style op;
-	if p.space_after_opening || p.space_before_closing then
-	  pp_print_string fmt " ";
-	tag_string fmt p.closing_style cl
+        tag_string fmt p.opening_style op;
+        if p.space_after_opening || p.space_before_closing then
+          pp_print_string fmt " ";
+        tag_string fmt p.closing_style cl
 
     | hd :: tl as l ->
-	tag_string fmt p.opening_style op;
-	if p.space_after_opening then
-	  pp_print_string fmt " ";
+        tag_string fmt p.opening_style op;
+        if p.space_after_opening then
+          pp_print_string fmt " ";
 
-	pp_open_nonaligned_box fmt p 0 l ;
-	if p.separators_stick_left then
-	  fprint_list_body_stick_left fmt p sep hd tl
-	else
-	  fprint_list_body_stick_right fmt p sep hd tl;
-	pp_close_box fmt ();
+        pp_open_nonaligned_box fmt p 0 l ;
+        if p.separators_stick_left then
+          fprint_list_body_stick_left fmt p sep hd tl
+        else
+          fprint_list_body_stick_right fmt p sep hd tl;
+        pp_close_box fmt ();
 
-	if p.space_before_closing then
-	  pp_print_string fmt " ";
-	tag_string fmt p.closing_style cl
+        if p.space_before_closing then
+          pp_print_string fmt " ";
+        tag_string fmt p.closing_style cl
 
 
   (* Printing a label:value pair.
@@ -401,23 +401,23 @@ struct
   *)
   and fprint_pair fmt ((lab, lp) as label) x =
     match x with
-	List ((op, sep, cl, p), l) when p.stick_to_label && p.align_closing ->
-	  fprint_list fmt (Some label) (op, sep, cl, p) l
+        List ((op, sep, cl, p), l) when p.stick_to_label && p.align_closing ->
+          fprint_list fmt (Some label) (op, sep, cl, p) l
 
       | _ ->
-	  let indent = lp.indent_after_label in
-	  pp_open_hvbox fmt 0;
+          let indent = lp.indent_after_label in
+          pp_open_hvbox fmt 0;
 
-	  open_tag fmt lp.label_style;
-	  fprint_t fmt lab;
-	  close_tag fmt lp.label_style;
+          open_tag fmt lp.label_style;
+          fprint_t fmt lab;
+          close_tag fmt lp.label_style;
 
-	  if lp.space_after_label then
-	    pp_print_break fmt 1 indent
-	  else
-	    pp_print_break fmt 0 indent;
-	  fprint_t fmt x;
-	  pp_close_box fmt ()
+          if lp.space_after_label then
+            pp_print_break fmt 1 indent
+          else
+            pp_print_break fmt 0 indent;
+          fprint_t fmt x;
+          pp_close_box fmt ()
 
   let to_formatter fmt x =
     fprint_t fmt x;
@@ -455,22 +455,22 @@ struct
     | List (param, l) -> fprint_list buf param l
     | Label (label, x) -> fprint_pair buf label x
     | Custom f ->
-	(* Will most likely not be compact *)
-	let fmt = formatter_of_buffer buf in
-	f fmt;
-	pp_print_flush fmt ()
+        (* Will most likely not be compact *)
+        let fmt = formatter_of_buffer buf in
+        f fmt;
+        pp_print_flush fmt ()
 
   and fprint_list buf (op, sep, cl, _) = function
       [] -> bprintf buf "%s%s" op cl
     | x :: tl ->
-	Buffer.add_string buf op;
-	fprint_t buf x;
-	List.iter (
-	  fun x ->
-	    Buffer.add_string buf sep;
-	    fprint_t buf x
-	) tl;
-	Buffer.add_string buf cl
+        Buffer.add_string buf op;
+        fprint_t buf x;
+        List.iter (
+          fun x ->
+            Buffer.add_string buf sep;
+            fprint_t buf x
+        ) tl;
+        Buffer.add_string buf cl
 
   and fprint_pair buf (label, _) x =
     fprint_t buf label;
