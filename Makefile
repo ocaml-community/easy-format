@@ -1,4 +1,4 @@
-VERSION = 1.0.2
+VERSION = 1.1.0
 export VERSION
 
 NATDYNLINK := $(shell if [ -f `ocamlfind ocamlc -where`/dynlink.cmxa ]; \
