@@ -125,9 +125,9 @@ let format_function_definition (body_label, body_param) name param body =
 (*
    Illustrate the difference between `Force_break and `Force_breaks_rec
 *)
-let make_heterogenous_list wrap =
+let make_heterogenous_list (container_wrap, wrap) =
   List (
-    ("[", ",", "]", { list with wrap_body = `Always_wrap }),
+    ("[", ",", "]", { list with wrap_body = container_wrap }),
     [
       Atom ("0", atom);
       List (
@@ -195,12 +195,28 @@ let () =
 
   (* Heterogenous list *)
   print "wrappable outer list, inner list using `Force_breaks";
-  with_margin 80 print_heterogenous_list `Force_breaks;
-  with_margin 20 print_heterogenous_list `Force_breaks;
+  with_margin 80 print_heterogenous_list (`Always_wrap, `Force_breaks);
+  with_margin 20 print_heterogenous_list (`Always_wrap, `Force_breaks);
 
   print "wrappable outer list, inner list using `Force_breaks_rec";
-  with_margin 80 print_heterogenous_list `Force_breaks_rec;
-  with_margin 20 print_heterogenous_list `Force_breaks_rec;
+  with_margin 80 print_heterogenous_list (`Always_wrap, `Force_breaks_rec);
+  with_margin 20 print_heterogenous_list (`Always_wrap, `Force_breaks_rec);
+
+  print "never_wrap outer list, inner list using `Force_breaks";
+  with_margin 80 print_heterogenous_list (`Never_wrap, `Force_breaks);
+  with_margin 20 print_heterogenous_list (`Never_wrap, `Force_breaks);
+
+  print "never_wrap outer list, inner list using `Force_breaks_rec";
+  with_margin 80 print_heterogenous_list (`Never_wrap, `Force_breaks_rec);
+  with_margin 20 print_heterogenous_list (`Never_wrap, `Force_breaks_rec);
+
+  print "no breaks outer list, inner list using `Force_breaks";
+  with_margin 80 print_heterogenous_list (`No_breaks, `Force_breaks);
+  with_margin 20 print_heterogenous_list (`No_breaks, `Force_breaks);
+
+  print "no breaks outer list, inner list using `Force_breaks_rec";
+  with_margin 80 print_heterogenous_list (`No_breaks, `Force_breaks_rec);
+  with_margin 20 print_heterogenous_list (`No_breaks, `Force_breaks_rec);
 
   (* Triangular array of arrays showing wrapping of lists of atoms *)
   let m = Array.init 20 (fun i -> Array.init i (fun i -> sqrt (float i))) in
