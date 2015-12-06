@@ -123,6 +123,36 @@ let format_function_definition (body_label, body_param) name param body =
   )
 
 (*
+   Illustrate the difference between `Force_break and `Force_breaks_rec on
+   labels.
+*)
+let labelOneAtom = Atom ("reallyLongLabelOne", atom)
+let labelTwoAtom = Atom ("reallyLongLabelTwo", atom)
+let labelThreeAtom = Atom ("reallyLongLabelABC", atom)
+let make_list_in_labels (wrap) =
+  Label (
+    (labelOneAtom, label),
+    (
+      Label (
+        (labelTwoAtom, label),
+        (
+          Label (
+            (labelThreeAtom, label),
+            List (
+              ("[", ",", "]", { list with wrap_body = wrap }),
+              [
+                Atom ("1.23456", atom);
+                Atom ("9.87654", atom);
+                Atom ("9.87654", atom);
+                Atom ("9.87654", atom);
+              ]
+            )
+          )
+        )
+      )
+    )
+  )
+(*
    Illustrate the difference between `Force_break and `Force_breaks_rec
 *)
 let make_heterogenous_list (container_wrap, wrap) =
@@ -169,6 +199,9 @@ let print_tuple fmt l =
 
 let print_heterogenous_list fmt wrap =
   Pretty.to_formatter fmt (make_heterogenous_list wrap)
+
+let print_list_in_labels fmt wrap =
+  Pretty.to_formatter fmt (make_list_in_labels wrap)
 
 let print_sum ?wrap fmt l =
   Pretty.to_formatter fmt (format_sum ?wrap l)
@@ -217,6 +250,21 @@ let () =
   print "no breaks outer list, inner list using `Force_breaks_rec";
   with_margin 80 print_heterogenous_list (`No_breaks, `Force_breaks_rec);
   with_margin 20 print_heterogenous_list (`No_breaks, `Force_breaks_rec);
+
+  print "label with inner list using `Force_breaks_rec";
+  with_margin 80 print_list_in_labels (`Force_breaks_rec);
+  with_margin 70 print_list_in_labels (`Force_breaks_rec);
+  with_margin 20 print_list_in_labels (`Force_breaks_rec);
+
+  print "label with inner list using `Force_breaks";
+  with_margin 80 print_list_in_labels (`Force_breaks);
+  with_margin 70 print_list_in_labels (`Force_breaks);
+  with_margin 20 print_list_in_labels (`Force_breaks);
+
+  print "label with inner list using `Never_wrap";
+  with_margin 80 print_list_in_labels (`Never_wrap);
+  with_margin 70 print_list_in_labels (`Never_wrap);
+  with_margin 20 print_list_in_labels (`Never_wrap);
 
   (* Triangular array of arrays showing wrapping of lists of atoms *)
   let m = Array.init 20 (fun i -> Array.init i (fun i -> sqrt (float i))) in
