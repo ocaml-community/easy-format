@@ -1,12 +1,20 @@
 open Format
 
-type wrap =
-    [ `Wrap_atoms
-    | `Always_wrap
-    | `Never_wrap
-    | `Force_breaks
-    | `Force_breaks_rec
-    | `No_breaks ]
+type wrap = [
+  | `Wrap_atoms
+  | `Always_wrap
+  | `Never_wrap
+  | `Force_breaks
+  | `Force_breaks_rec
+  | `No_breaks
+]
+
+type label_break = [
+  | `Auto
+  | `Always
+  | `Always_rec
+  | `Never
+]
 
 type style_name = string
 type style = {
@@ -57,12 +65,14 @@ let list = {
 }
 
 type label_param = {
+  label_break: label_break;
   space_after_label : bool;
   indent_after_label : int;
   label_style : style_name option;
 }
 
 let label = {
+  label_break = `Auto;
   space_after_label = true;
   indent_after_label = 2;
   label_style = None;
@@ -118,12 +128,13 @@ let propagate_from_leaf_to_root
    has the attribute wrap_body = `Force_breaks_rec.
 *)
 let propagate_forced_breaks x =
-  (* acc = whether to force breaks in wrappable lists *)
+  (* acc = whether to force breaks in wrappable lists or labels *)
   let init_acc = function
+    | List ((_, _, _, { wrap_body = `Force_breaks_rec }), _)
+    | Label ((_, { label_break = `Always_rec }), _) -> true
     | Atom _
     | Label _
-    | Custom _ -> false
-    | List ((_, _, _, { wrap_body = `Force_breaks_rec }), _) -> true
+    | Custom _
     | List _ -> false
   in
   let merge_acc force_breaks1 force_breaks2 =
@@ -144,9 +155,16 @@ let propagate_forced_breaks x =
         else
           x, false
 
+    | Label ((a, ({ label_break = `Auto } as lp)), b) ->
+        if force_breaks then
+          let lp = { lp with label_break = `Always } in
+          Label ((a, lp), b), true
+        else
+          x, false
+
     | List ((_, _, _, { wrap_body = `No_breaks }), _)
+    | Label ((_, { label_break = (`Always | `Always_rec | `Never) }), _)
     | Atom _
-    | Label _
     | Custom _ -> x, force_breaks
   in
   let new_x, forced_breaks =
@@ -492,10 +510,22 @@ struct
           fprint_t fmt lab;
           close_tag fmt lp.label_style;
 
-          if lp.space_after_label then
-            pp_print_break fmt 1 indent
-          else
-            pp_print_break fmt 0 indent;
+          (match lp.label_break with
+           | `Auto ->
+               if lp.space_after_label then
+                 pp_print_break fmt 1 indent
+               else
+                 pp_print_break fmt 0 indent
+           | `Always
+           | `Always_rec ->
+               pp_force_newline fmt ();
+               pp_print_string fmt (String.make indent ' ')
+           | `Never ->
+               if lp.space_after_label then
+                 pp_print_char fmt ' '
+               else
+                 ()
+          );
           fprint_t fmt x;
           pp_close_box fmt ()
 
@@ -620,12 +650,14 @@ struct
   }
 
   let label_true = {
+    label_break = `Auto;
     space_after_label = true;
     indent_after_label = 2;
     label_style = None;
   }
 
   let label_false = {
+    label_break = `Auto;
     space_after_label = false;
     indent_after_label = 2;
     label_style = None;

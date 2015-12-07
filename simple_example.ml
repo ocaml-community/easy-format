@@ -126,18 +126,18 @@ let format_function_definition (body_label, body_param) name param body =
    Illustrate the difference between `Force_break and `Force_breaks_rec on
    labels.
 *)
-let labelOneAtom = Atom ("reallyLongLabelOne", atom)
-let labelTwoAtom = Atom ("reallyLongLabelTwo", atom)
-let labelThreeAtom = Atom ("reallyLongLabelABC", atom)
+let label_one_atom = Atom ("reallyLongLabelOne", atom)
+let label_two_atom = Atom ("reallyLongLabelTwo", atom)
+let label_three_atom = Atom ("reallyLongLabelABC", atom)
 let make_list_in_labels (wrap) =
   Label (
-    (labelOneAtom, label),
+    (label_one_atom, label),
     (
       Label (
-        (labelTwoAtom, label),
+        (label_two_atom, label),
         (
           Label (
-            (labelThreeAtom, label),
+            (label_three_atom, label),
             List (
               ("[", ",", "]", { list with wrap_body = wrap }),
               [
@@ -152,6 +152,7 @@ let make_list_in_labels (wrap) =
       )
     )
   )
+
 (*
    Illustrate the difference between `Force_break and `Force_breaks_rec
 *)
