@@ -135,6 +135,7 @@ let propagate_forced_breaks x =
     | List ((_, _, _, { wrap_body = `Force_breaks }), _) -> x, force_breaks
 
     | List ((op, sep, cl, ({ wrap_body = (`Wrap_atoms
+                                         | `Never_wrap
                                          | `Always_wrap) } as p)),
             children) ->
         if force_breaks then
@@ -143,7 +144,7 @@ let propagate_forced_breaks x =
         else
           x, false
 
-    | List ((_, _, _, { wrap_body = (`Never_wrap | `No_breaks) }), _)
+    | List ((_, _, _, { wrap_body = `No_breaks }), _)
     | Atom _
     | Label _
     | Custom _ -> x, force_breaks
