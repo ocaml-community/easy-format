@@ -39,6 +39,19 @@ type wrap =
       i.e. never break line between list items
 *)
 
+type label_break = [
+  | `Auto
+  | `Always
+  | `Always_rec
+  | `Never
+]
+(** When to break the line after a [Label]:
+    - [Auto]: break after the label if there's not enough room
+    - [Always]: always break after the label
+    - [Always_rec]: always break after the label and force breaks in all parent
+      lists and labels, similarly to [`Force_breaks_rec] for lists.
+    - [Never]: never break after the label
+*)
 
 type style_name = string
 
@@ -116,14 +129,22 @@ val list : list_param
     See {!Easy_format.label}.
 *)
 type label_param = {
-  space_after_label : bool; (** Whether there must be some whitespace
-				after the label.
-				Default: [true] *)
-  indent_after_label : int; (** Extra indentation before the item
-				that comes after a label.
-				Default: [2]
-			    *)
-  label_style : style_name option; (** Default: [None] *)
+  label_break: label_break;
+    (** Whether to break the line after the label.
+        Introduced in version 1.2.0.
+        Default: [`Auto] *)
+
+  space_after_label : bool;
+    (** Whether there must be some whitespace after the label.
+	Default: [true] *)
+
+  indent_after_label : int;
+    (** Extra indentation before the item that comes after a label.
+	Default: [2]
+    *)
+
+  label_style : style_name option;
+    (** Default: [None] *)
 }
 
 val label : label_param

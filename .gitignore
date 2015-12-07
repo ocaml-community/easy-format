@@ -18,4 +18,6 @@ nativecode
 lambda_example
 simple_example
 test_easy_format
-
+easy_format_example.html
+easy_format_example.ml
+ocamldoc
