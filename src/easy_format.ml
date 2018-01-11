@@ -1,5 +1,22 @@
 open Format
 
+(** Shadow map and split with tailrecursive variants. *)
+module List = struct
+  include List
+  (** Tail recursive of map *)
+  let map f l = List.rev_map f l |> List.rev
+
+  (** Tail recursive version of split *)
+  let split l =
+    let rec inner xs ys = function
+      | (x, y) :: xys ->
+          inner (x::xs) (y::ys) xys
+      | [] -> (xs, ys)
+    in
+    inner [] [] (List.rev l)
+
+end
+
 type wrap = [
   | `Wrap_atoms
   | `Always_wrap
