@@ -59,11 +59,14 @@ let make_data list_param label_param atom_param =
     )
   )
 
+(* List.init achieves the same but requires ocaml >= 4.06. *)
+let list_init n f = Array.to_list (Array.init n f)
+
 (* Test stack overflow *)
 let () =
   let data =
     List ( ("[", ",", "]", list),
-           List.init 1_000_000 (fun _i -> Atom ("x", atom))
+           list_init 1_000_000 (fun _i -> Atom ("x", atom))
          )
   in
 
