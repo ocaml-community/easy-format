@@ -7,13 +7,15 @@ module List = struct
   let map f l = List.rev_map f l |> List.rev
 
   (** Tail recursive version of split *)
-  let split l =
+  let rev_split l =
     let rec inner xs ys = function
       | (x, y) :: xys ->
           inner (x::xs) (y::ys) xys
       | [] -> (xs, ys)
     in
-    inner [] [] (List.rev l)
+    inner [] [] l
+
+  let split l = rev_split (List.rev l)
 
 end
 
@@ -125,7 +127,7 @@ let propagate_from_leaf_to_root
         let acc = init_acc x in
         map_node x acc
     | List (param, children) ->
-        let new_children, accs = List.split (List.map aux children) in
+        let new_children, accs = List.rev_split (List.rev_map aux children) in
         let acc = List.fold_left merge_acc (init_acc x) accs in
         map_node (List (param, new_children)) acc
     | Label ((x1, param), x2) ->
