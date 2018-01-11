@@ -59,6 +59,16 @@ let make_data list_param label_param atom_param =
     )
   )
 
+(* Test stack overflow *)
+let () =
+  let data =
+    List ( ("[", ",", "]", list),
+           List.init 1_000_000 (fun _i -> Atom ("x", atom))
+         )
+  in
+
+  let (_: string) = Easy_format.Pretty.to_string data in
+  ()
 
 let () =
   let x1 = make_data list label atom in
