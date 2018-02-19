@@ -11,7 +11,7 @@ The documentation is at https://mjambon.github.io/mjambon2016/easy-format.html
 Installation
 ------------
 
-Installation requires ocamlfind.
+Installation requires dune (formerly known as jbuilder) and ocamlfind.
 
 ```
 $ make
