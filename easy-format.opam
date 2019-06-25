@@ -5,11 +5,11 @@ homepage: "http://mjambon.com/easy-format.html"
 bug-reports: "https://github.com/mjambon/easy-format/issues"
 dev-repo: "https://github.com/mjambon/easy-format.git"
 build: [
-  ["jbuilder" "build" "-p" name "-j" jobs]
+  ["dune" "build" "-p" name "-j" jobs]
 ]
 
 build-test: [
-  ["jbuilder" "runtest" "-p" name]
+  ["dune" "runtest" "-p" name "-j" jobs]
 ]
-depends: ["jbuilder" {build}]
+depends: ["dune" {build & >= "1.0"}]
 available: [ ocaml-version >= "4.02.3"]
