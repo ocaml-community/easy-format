@@ -10,6 +10,7 @@ maintainer: ["martin@mjambon.com" "rudi.grinberg@gmail.com"]
 authors: ["Martin Jambon"]
 bug-reports: "https://github.com/mjambon/easy-format/issues"
 homepage: "https://github.com/mjambon/easy-format"
+doc: "https://mjambon.github.io/easy-format/"
 license: "BSD-3-Clause"
 dev-repo: "git+https://github.com/mjambon/easy-format.git"
 synopsis:
@@ -28,6 +29,7 @@ nodes:
 * atoms
 * lists
 * labelled nodes
+
 Atoms represent any text that is guaranteed to be printed as-is. Lists can model
 any sequence of items such as arrays of data or lists of definitions that are
 labelled with something like "int main", "let x =" or "x:"."""

@@ -7,6 +7,7 @@
 (maintainers "martin@mjambon.com" "rudi.grinberg@gmail.com")
 (authors "Martin Jambon")
 (implicit_transitive_deps false)
+(documentation "https://mjambon.github.io/easy-format/")
 
 (package
  (synopsis "High-level and functional interface to the Format module of the OCaml standard library")
