@@ -1,3 +1,10 @@
+1.3.2 (2019-08-02)
+------------------
+
+- Port from jbuilder to dune. (#24)
+
+- Port to opam 2.0 and make dune a non build dependency (#25)
+
 1.0.1 (2012-02-03)
 ------------------
 
