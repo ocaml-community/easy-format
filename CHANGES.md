@@ -1,4 +1,5 @@
-2012-02-03: Release 1.0.1
+1.0.1 (2012-02-03)
+------------------
 
 - Nothing new other than the way of building the tar.gz package.
 
@@ -21,5 +22,7 @@ New features:
   (HTML, terminal, ...) without interfering with the computation of
   line breaks and spacing.
 
+0.9.0 (2008-07-09)
+------------------
 
-2008-07-09: First release 0.9.0
+- Initial release
