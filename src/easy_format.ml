@@ -1,5 +1,3 @@
-open Format
-
 let rev_split l =
   let rec inner xs ys = function
     | (x, y) :: xys ->
@@ -90,7 +88,7 @@ type t =
     Atom of string * atom_param
   | List of (string * string * string * list_param) * t list
   | Label of (t * label_param) * t
-  | Custom of (formatter -> unit)
+  | Custom of (Format.formatter -> unit)
 
 type escape =
     [ `None
@@ -279,10 +277,10 @@ struct
     match p.wrap_body with
         `Always_wrap
       | `Never_wrap
-      | `Wrap_atoms -> pp_open_hvbox fmt indent
+      | `Wrap_atoms -> Format.pp_open_hvbox fmt indent
       | `Force_breaks
-      | `Force_breaks_rec -> pp_open_vbox fmt indent
-      | `No_breaks -> pp_open_hbox fmt ()
+      | `Force_breaks_rec -> Format.pp_open_vbox fmt indent
+      | `No_breaks -> Format.pp_open_hbox fmt ()
 
   let extra_box p l =
     let wrap =
@@ -296,8 +294,8 @@ struct
             List.for_all (function Atom _ -> true | _ -> false) l
     in
     if wrap then
-      ((fun fmt -> pp_open_hovbox fmt 0),
-       (fun fmt -> pp_close_box fmt ()))
+      ((fun fmt -> Format.pp_open_hovbox fmt 0),
+       (fun fmt -> Format.pp_close_box fmt ()))
     else
       ((fun _ -> ()),
        (fun _ -> ()))
@@ -305,16 +303,16 @@ struct
 
   let pp_open_nonaligned_box fmt p indent l =
     match p.wrap_body with
-        `Always_wrap -> pp_open_hovbox fmt indent
-      | `Never_wrap -> pp_open_hvbox fmt indent
+        `Always_wrap -> Format.pp_open_hovbox fmt indent
+      | `Never_wrap -> Format.pp_open_hvbox fmt indent
       | `Wrap_atoms ->
           if List.for_all (function Atom _ -> true | _ -> false) l then
-            pp_open_hovbox fmt indent
+            Format.pp_open_hovbox fmt indent
           else
-            pp_open_hvbox fmt indent
+            Format.pp_open_hvbox fmt indent
       | `Force_breaks
-      | `Force_breaks_rec -> pp_open_vbox fmt indent
-      | `No_breaks -> pp_open_hbox fmt ()
+      | `Force_breaks_rec -> Format.pp_open_vbox fmt indent
+      | `No_breaks -> Format.pp_open_hbox fmt ()
 
 
   let open_tag fmt = function
@@ -327,7 +325,7 @@ struct
 
   let tag_string fmt o s =
     match o with
-        None -> pp_print_string fmt s
+        None -> Format.pp_print_string fmt s
       | Some tag ->
           Format.pp_open_tag fmt tag [@warning "-3"] ;
           Format.pp_print_string fmt s;
@@ -553,7 +551,7 @@ struct
     Buffer.contents buf
 
   let to_channel ?(escape = `None) ?(styles = []) oc x =
-    let fmt = formatter_of_out_channel oc in
+    let fmt = Format.formatter_of_out_channel oc in
     define_styles fmt escape styles;
     to_formatter fmt x
 
@@ -575,7 +573,7 @@ struct
     | Label (label, x) -> fprint_pair buf label x
     | Custom f ->
         (* Will most likely not be compact *)
-        let fmt = formatter_of_buffer buf in
+        let fmt = Format.formatter_of_buffer buf in
         f fmt;
         Format.pp_print_flush fmt ()
 
