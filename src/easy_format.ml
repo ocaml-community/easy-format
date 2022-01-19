@@ -197,19 +197,19 @@ struct
     documentation of the Format module.
   *)
   let set_escape fmt escape =
-    let print0, flush0 = Format.pp_get_formatter_output_functions fmt () [@warning "-3"] in
-    let tagf0 = Format.pp_get_formatter_tag_functions fmt () [@warning "-3"] in
+    let print0, flush0 = Format.pp_get_formatter_output_functions fmt () in
+    let tagf0 = Format.pp_get_formatter_stag_functions fmt () in
 
     let is_tag = ref false in
 
     let mot tag =
       is_tag := true;
-      tagf0.mark_open_tag tag
+      tagf0.mark_open_stag tag
     in
 
     let mct tag =
       is_tag := true;
-      tagf0.mark_close_tag tag
+      tagf0.mark_close_stag tag
     in
 
     let print s p n =
@@ -222,12 +222,12 @@ struct
 
     let tagf = {
       tagf0 with
-        mark_open_tag = mot;
-        mark_close_tag = mct
+        mark_open_stag = mot;
+        mark_close_stag = mct
     }
     in
     Format.pp_set_formatter_output_functions fmt print flush0;
-    Format.pp_set_formatter_tag_functions fmt tagf [@warning "-3"]
+    Format.pp_set_formatter_stag_functions fmt tagf
 
 
   let set_escape_string fmt esc =
@@ -249,22 +249,27 @@ struct
           Hashtbl.add tbl1 style_name style.tag_open;
           Hashtbl.add tbl2 style_name style.tag_close
       ) l;
-      let mark_open_tag style_name =
-        try Hashtbl.find tbl1 style_name
-        with Not_found -> ""
+      let mark_open_tag = function
+        | Format.String_tag style_name ->
+            (try Hashtbl.find tbl1 style_name
+             with Not_found -> "")
+        | _ -> ""
       in
-      let mark_close_tag style_name =
-        try Hashtbl.find tbl2 style_name
-        with Not_found -> ""
+      let mark_close_tag = function
+        | Format.String_tag style_name ->
+            (try Hashtbl.find tbl2 style_name
+             with Not_found -> "")
+        | _ ->
+            ""
       in
 
       let tagf = {
-        (Format.pp_get_formatter_tag_functions fmt () [@warning "-3"] ) with
-          mark_open_tag = mark_open_tag;
-          mark_close_tag = mark_close_tag
+        (Format.pp_get_formatter_stag_functions fmt ()) with
+          mark_open_stag = mark_open_tag;
+          mark_close_stag = mark_close_tag
       }
       in
-      Format.pp_set_formatter_tag_functions fmt tagf [@warning "-3"]
+      Format.pp_set_formatter_stag_functions fmt tagf
     );
 
     (match escape with
@@ -317,19 +322,19 @@ struct
 
   let open_tag fmt = function
       None -> ()
-    | Some s -> Format.pp_open_tag fmt s [@warning "-3"]
+    | Some s -> Format.pp_open_stag fmt (Format.String_tag s)
 
   let close_tag fmt = function
       None -> ()
-    | Some _ -> Format.pp_close_tag fmt () [@warning "-3"]
+    | Some _ -> Format.pp_close_stag fmt ()
 
   let tag_string fmt o s =
     match o with
         None -> Format.pp_print_string fmt s
       | Some tag ->
-          Format.pp_open_tag fmt tag [@warning "-3"] ;
+          Format.pp_open_stag fmt (Format.String_tag tag);
           Format.pp_print_string fmt s;
-          Format.pp_close_tag fmt () [@warning "-3"]
+          Format.pp_close_stag fmt ()
 
   let rec fprint_t fmt = function
       Atom (s, p) ->
