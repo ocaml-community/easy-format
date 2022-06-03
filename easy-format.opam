@@ -27,7 +27,7 @@ homepage: "https://github.com/mjambon/easy-format"
 doc: "https://mjambon.github.io/easy-format/"
 bug-reports: "https://github.com/mjambon/easy-format/issues"
 depends: [
-  "dune" {>= "2.9" & >= "1.10"}
+  "dune" {>= "3.2" & >= "1.10"}
   "ocaml" {>= "4.02.3"}
   "odoc" {with-doc}
 ]
@@ -40,11 +40,9 @@ build: [
     name
     "-j"
     jobs
-    "--promote-install-files=false"
     "@install"
     "@runtest" {with-test}
     "@doc" {with-doc}
   ]
-  ["dune" "install" "-p" name "--create-install-files" name]
 ]
 dev-repo: "git+https://github.com/mjambon/easy-format.git"
