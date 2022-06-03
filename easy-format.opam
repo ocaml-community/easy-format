@@ -28,7 +28,7 @@ doc: "https://mjambon.github.io/easy-format/"
 bug-reports: "https://github.com/mjambon/easy-format/issues"
 depends: [
   "dune" {>= "3.2" & >= "1.10"}
-  "ocaml" {>= "4.02.3"}
+  "ocaml" {>= "4.08"}
   "odoc" {with-doc}
 ]
 build: [

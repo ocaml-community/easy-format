@@ -31,4 +31,4 @@ labelled with something like \"int main\", \"let x =\" or \"x:\".")
  (name easy-format)
  (depends
   (dune (>= 1.10))
-  (ocaml (>= "4.02.3"))))
+  (ocaml (>= 4.08))))
