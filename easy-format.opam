@@ -23,9 +23,9 @@ labelled with something like "int main", "let x =" or "x:"."""
 maintainer: ["martin@mjambon.com" "rudi.grinberg@gmail.com"]
 authors: ["Martin Jambon"]
 license: "BSD-3-Clause"
-homepage: "https://github.com/mjambon/easy-format"
+homepage: "https://github.com/ocaml-community/easy-format"
 doc: "https://mjambon.github.io/easy-format/"
-bug-reports: "https://github.com/mjambon/easy-format/issues"
+bug-reports: "https://github.com/ocaml-community/easy-format/issues"
 depends: [
   "dune" {>= "3.2" & >= "1.10"}
   "ocaml" {>= "4.08"}
@@ -45,4 +45,4 @@ build: [
     "@doc" {with-doc}
   ]
 ]
-dev-repo: "git+https://github.com/mjambon/easy-format.git"
+dev-repo: "git+https://github.com/ocaml-community/easy-format.git"

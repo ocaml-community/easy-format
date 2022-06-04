@@ -1,7 +1,7 @@
 (lang dune 3.2)
 (name easy-format)
 
-(source (github mjambon/easy-format))
+(source (github ocaml-community/easy-format))
 (generate_opam_files true)
 (license "BSD-3-Clause")
 (maintainers "martin@mjambon.com" "rudi.grinberg@gmail.com")
